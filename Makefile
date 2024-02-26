@@ -6,24 +6,24 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/20 21:11:03 by pharbst           #+#    #+#              #
-#    Updated: 2024/02/20 22:06:30 by pharbst          ###   ########.fr        #
+#    Updated: 2024/02/25 20:14:43 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 include color.mk
 
 ifeq ($(UNAME), Darwin)
-PRONAME = socketManager.a
+PRONAME = socketManager
 else ifeq ($(UNAME), Linux)
-PRONAME = socketManager_linux.a
+PRONAME = socketManager_linux
 endif
 
 CC		= c++
 
-SSLCFLAGS	:= -D__SSL__ -I$(shell brew --prefix)/opt/openssl@3/include
-SSLLDFLAGS	:= -L$(shell brew --prefix)/opt/openssl@3/lib -lssl -lcrypto
+# SSLCFLAGS	:= -D__SSL__ -I$(shell brew --prefix)/opt/openssl@3/include
+# SSLLDFLAGS	:= -L$(shell brew --prefix)/opt/openssl@3/lib -lssl -lcrypto
 # -MMD and -MP are ussed to create dependecy files
-CFLAGS	= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 $(INC_DIR)
+CFLAGS	= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 -lssl -lcrypto $(INC_DIR)
 
 INC_DIR	= 	-I./include/ \
 			-I./include/socketManager/ \
@@ -41,11 +41,13 @@ SOURCE	=	socketManager.cpp \
 HEADER	= $(addprefix $(INC_DIR), $(SOURCE:.cpp=.hpp))
 
 # add other header files here
-HEADER	+= socketManagerStructs.hpp \
-			socketManagerClass.hpp
+HEADER	+= 
 
 # add source files without header with the same name and the file with the main function has to be the first in the list
 SRCS	=	socketManagerInit.cpp \
+			socketManagerSSL.cpp \
+			socketManagerSEPOLL.cpp \
+			test.cpp \
 			$(SOURCE)
 
 OBJ_DIR	= ./obj/
@@ -59,19 +61,25 @@ OBJS = $(addprefix $(OBJ_DIR), $(SRCS:.cpp=.o))
 
 
 # in case of subdirectories in the src folder add them here
-VPATH := src include src/socketManager src/Interface src/config src/error src/httpTransfer
+VPATH := src src/socketManager src/Interface src/config src/error src/httpTransfer
 
 all:
 	@$(MAKE) -s proname_header
 	@$(MAKE) -s std_all
 
-ssl:
+test: $(PRONAME)
 	@$(MAKE) -s proname_header
-ifeq ($(UNAME), Darwin)
-	@$(MAKE) -s std_all SSLCFLAGS="-D__SSL__ -I$(shell brew --prefix)/opt/openssl@3/include" SSLLDFLAGS="-L$(shell brew --prefix)/opt/openssl@3/lib -lssl -lcrypto"
-else ifeq ($(UNAME), Linux)
-	@$(MAKE) -s std_all -D__SSL__ -lssl -lcrypto
-endif
+	@$(MAKE) -s std_all
+	@c++ $(CFLAGS) -o test test.cpp $(PRONAME)
+	@./test
+
+# ssl:
+# 	@$(MAKE) -s proname_header
+# ifeq ($(UNAME), Darwin)
+# 	@$(MAKE) -s std_all SSLCFLAGS="-D__SSL__ -I$(shell brew --prefix)/opt/openssl@3/include" SSLLDFLAGS="-L$(shell brew --prefix)/opt/openssl@3/lib -lssl -lcrypto"
+# else ifeq ($(UNAME), Linux)
+# 	@$(MAKE) -s std_all -D__SSL__ -lssl -lcrypto
+# endif
 
 std_all:
 	@printf "%s$(RESET)\n" "$(FPurple)Compiling $(PRONAME)"
@@ -80,9 +88,7 @@ std_all:
 	@printf "$(SETCURUP)$(CLEARLINE)$(SETCURUP)$(CLEARLINE)\r$(FPurple)%-21s$(FGreen)$(TICKBOX)$(RESET)\n" "Compiling $(PRONAME)"
 
 $(PRONAME): $(OBJS)
-	@echo $(SSLCFLAGS)
-	@echo $(SSLLDFLAGS)
-	@ar rcs $(PRONAME) $(OBJS)
+	@$(CC) $(CFLAGS) $(OBJS) -o $(PRONAME)
 
 $(OBJ_DIR)%.o: %.cpp
 ifeq ($(shell test -d $(OBJ_DIR) || echo $$?), 1)
@@ -111,30 +117,30 @@ run: re
 	./$(PRONAME)
 
 arch:
-	-docker rm -f webserv
-	docker-compose -f container/Arch/docker-compose.yml build
-	docker-compose -f container/Arch/docker-compose.yml up
+	-sudo docker rm -f webserv
+	sudo docker-compose -f container/Arch/docker-compose.yml build
+	sudo docker-compose -f container/Arch/docker-compose.yml up
 
 ubuntu:
-	-docker rm -f webserv
-	docker-compose -f container/Ubuntu/docker-compose.yml build
-	docker-compose -f container/Ubuntu/docker-compose.yml up
+	-sudo docker rm -f webserv
+	sudo docker-compose -f container/Ubuntu/docker-compose.yml build
+	sudo docker-compose -f container/Ubuntu/docker-compose.yml up
 
 debian:
-	-docker rm -f webserv
-	docker-compose -f container/Debian/docker-compose.yml build
-	docker-compose -f container/Debian/docker-compose.yml up
+	-sudo docker rm -f webserv
+	sudo docker-compose -f container/Debian/docker-compose.yml build
+	sudo docker-compose -f container/Debian/docker-compose.yml up
 
 alpine:
-	-docker rm -f webserv
-	docker-compose -f ./container/Alpine/docker-compose.yml build
-	docker-compose -f ./container/Alpine/docker-compose.yml up
+	-sudo docker rm -f webserv
+	sudo docker-compose -f ./container/Alpine/docker-compose.yml build
+	sudo docker-compose -f ./container/Alpine/docker-compose.yml up
 
 logs:
-	docker logs webserv
+	sudo docker logs webserv
 
 restart_docker:
-	docker restart webserv
+	sudo docker restart webserv
 
 std_clean:
 	@rm -rf $(OBJ_DIR)

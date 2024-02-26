@@ -1,0 +1,11 @@
+version: '3.1'
+
+services:
+  webserv:
+    build: .
+    image: webserv:debian
+    container_name: webserv
+    ports:
+      - "80:80"
+    volumes:
+      - ../../:/Webserv

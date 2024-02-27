@@ -6,7 +6,7 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/20 21:11:03 by pharbst           #+#    #+#              #
-#    Updated: 2024/02/25 20:14:43 by pharbst          ###   ########.fr        #
+#    Updated: 2024/02/27 18:15:22 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,29 +14,21 @@ include color.mk
 
 ifeq ($(UNAME), Darwin)
 PRONAME = socketManager
+SSLCFLAGS	:= -D__SSL__ -I$(shell brew --prefix)/opt/openssl@3/include
+SSLLDFLAGS	:= -L$(shell brew --prefix)/opt/openssl@3/lib -lssl -lcrypto
 else ifeq ($(UNAME), Linux)
 PRONAME = socketManager_linux
 endif
 
 CC		= c++
 
-# SSLCFLAGS	:= -D__SSL__ -I$(shell brew --prefix)/opt/openssl@3/include
-# SSLLDFLAGS	:= -L$(shell brew --prefix)/opt/openssl@3/lib -lssl -lcrypto
-# -MMD and -MP are ussed to create dependecy files
 CFLAGS	= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 -lssl -lcrypto $(INC_DIR)
+# -MMD and -MP are used to create dependecy files
 
-INC_DIR	= 	-I./include/ \
-			-I./include/socketManager/ \
-			-I./include/Interface/ \
-			# -I./include/config/ \
-			# -I./include/error/ \
-			# -I./include/httpTransfer/ \
+INC_DIR	= 	-I./include/
 
 # add source files with header with the same name
-SOURCE	=	socketManager.cpp \
-			# Config.cpp \
-			# Error.cpp \
-			# httpTransfer.cpp
+SOURCE	=	socketManager.cpp
 
 HEADER	= $(addprefix $(INC_DIR), $(SOURCE:.cpp=.hpp))
 
@@ -44,10 +36,10 @@ HEADER	= $(addprefix $(INC_DIR), $(SOURCE:.cpp=.hpp))
 HEADER	+= 
 
 # add source files without header with the same name and the file with the main function has to be the first in the list
-SRCS	=	socketManagerInit.cpp \
+SRCS	=	test.cpp \
+			socketManagerInit.cpp \
 			socketManagerSSL.cpp \
 			socketManagerSEPOLL.cpp \
-			test.cpp \
 			$(SOURCE)
 
 OBJ_DIR	= ./obj/
@@ -84,8 +76,9 @@ test: $(PRONAME)
 std_all:
 	@printf "%s$(RESET)\n" "$(FPurple)Compiling $(PRONAME)"
 	@-include $(OBJS:.o=.d)
+	@printf "$(SETCURUP)$(CLEARLINE)"
 	@$(MAKE) -s $(PRONAME)
-	@printf "$(SETCURUP)$(CLEARLINE)$(SETCURUP)$(CLEARLINE)\r$(FPurple)%-21s$(FGreen)$(TICKBOX)$(RESET)\n" "Compiling $(PRONAME)"
+	@printf "$(SETCURUP)$(CLEARLINE)\r$(FPurple)%-21s$(FGreen)$(TICKBOX)$(RESET)\n" "Compiling $(PRONAME)"
 
 $(PRONAME): $(OBJS)
 	@$(CC) $(CFLAGS) $(OBJS) -o $(PRONAME)
@@ -141,6 +134,27 @@ logs:
 
 restart_docker:
 	sudo docker restart webserv
+
+install_brew:
+	@git clone --depth=1 https://github.com/Homebrew/brew $HOME/goinfre/.brew && echo 'export PATH=$HOME/goinfre/.brew/bin:$PATH' >> $HOME/.zshrc && source $HOME/.zshrc && brew update
+
+install_openssl:
+ifeq ($(UNAME), Darwin)
+ifeq ($(which brew), $(shell echo "brew not found"))
+	$(MAKE) -s install_brew
+endif
+ifeq ($(which openssl), $(shell echo "openssl not found"))
+	brew install openssl
+endif
+else ifeq ($(UNAME), Linux)
+ifeq ($(OS_LIKE), Debian)
+	sudo apt-get install openssl
+else ifeq ($(OS_LIKE), Alpine)
+	sudo apk add openssl
+else ifeq ($(OS_LIKE), Arch)
+	sudo pacman -S openssl
+endif
+endif
 
 std_clean:
 	@rm -rf $(OBJ_DIR)

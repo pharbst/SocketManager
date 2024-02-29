@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:22:31 by pharbst           #+#    #+#             */
-/*   Updated: 2024/02/26 14:21:10 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/02/27 19:39:03 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,16 +102,23 @@ void	socketManager::socketAccept(int fd) {
 		if (newClient == -1)
 			std::cout << "error accepting a client" << std::endl;
 		else {
-			struct sockData	data = SOCKET;
-			data.parentSocket = _sockets.find(fd);
-			if (SSLSOCKET) {
-				data.info.sslData.Context = SSL_new((SSL_CTX*)SOCKET.info.sslData.Context);
-				if (!data.info.sslData.Context) {
-					close(newClient);
-					return ;
+			struct sockData	data; {
+				data.parentSocket = _sockets.find(fd);
+				data.info.port = SOCKET.info.port;
+				data.info.read = false;
+				data.info.write = false;
+				if (SSLSOCKET) {
+					data.info.ssl = true;
+					data.info.read = false;
+					data.info.write = false;
+					data.info.sslData.Context = SSL_new((SSL_CTX*)SOCKET.info.sslData.Context);
+					if (!data.info.sslData.Context) {
+						close(newClient);
+						return ;
+					}
+					SSL_set_fd((SSL*)data.info.sslData.Context, newClient);
+					SSLAccept(newClient);
 				}
-				SSL_set_fd((SSL*)data.info.sslData.Context, newClient);
-				SSLAccept(newClient);
 			}
 			ADDSOCKET(newClient, data);
 			printSocketMap();

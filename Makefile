@@ -6,54 +6,62 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/20 21:11:03 by pharbst           #+#    #+#              #
-#    Updated: 2024/02/27 18:15:22 by pharbst          ###   ########.fr        #
+#    Updated: 2024/02/27 19:31:38 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 include color.mk
 
+INC_DIR		:= 	-I./include/
+
 ifeq ($(UNAME), Darwin)
-PRONAME = socketManager
-SSLCFLAGS	:= -D__SSL__ -I$(shell brew --prefix)/opt/openssl@3/include
+SUDO		:= 
+PRONAME		 = socketManager.out
+SSLCFLAGS	:= -I$(shell brew --prefix)/opt/openssl@3/include
 SSLLDFLAGS	:= -L$(shell brew --prefix)/opt/openssl@3/lib -lssl -lcrypto
+CFLAGS		:= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 $(SSLCFLAGS) $(INC_DIR)
+LDFLAGS		:= $(SSLLDFLAGS)
 else ifeq ($(UNAME), Linux)
-PRONAME = socketManager_linux
+SUDO		:= sudo
+PRONAME		 = socketManager_linux
+CFLAGS		:= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 $(INC_DIR)
+LDFLAGS		:= -lssl -lcrypto
 endif
 
-CC		= c++
+CC			 = c++
 
-CFLAGS	= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 -lssl -lcrypto $(INC_DIR)
 # -MMD and -MP are used to create dependecy files
 
-INC_DIR	= 	-I./include/
 
 # add source files with header with the same name
-SOURCE	=	socketManager.cpp
+SOURCE		 =	socketManager.cpp \
+				Interface.cpp
 
-HEADER	= $(addprefix $(INC_DIR), $(SOURCE:.cpp=.hpp))
+HEADER		 = $(addprefix $(INC_DIR), $(SOURCE:.cpp=.hpp))
 
 # add other header files here
-HEADER	+= 
+HEADER		+= 
 
 # add source files without header with the same name and the file with the main function has to be the first in the list
-SRCS	=	test.cpp \
-			socketManagerInit.cpp \
-			socketManagerSSL.cpp \
-			socketManagerSEPOLL.cpp \
-			$(SOURCE)
+SRCS		 =	test.cpp \
+				socketManagerInit.cpp \
+				socketManagerSSL.cpp \
+				socketManagerSEPOLL.cpp \
+				InterfaceTools.cpp \
+				$(SOURCE)
 
-OBJ_DIR	= ./obj/
+OBJ_DIR		 = ./obj/
 ifeq ($(UNAME), Darwin)
-OBJ_DIR = ./obj/mac/
+OBJ_DIR 	 = ./obj/mac/
 else ifeq ($(UNAME), Linux)
-OBJ_DIR = ./obj/linux/
+OBJ_DIR 	 = ./obj/linux/
 endif
 
-OBJS = $(addprefix $(OBJ_DIR), $(SRCS:.cpp=.o))
+OBJS		 = $(addprefix $(OBJ_DIR), $(SRCS:.cpp=.o))
 
 
 # in case of subdirectories in the src folder add them here
-VPATH := src src/socketManager src/Interface src/config src/error src/httpTransfer
+VPATH		:= src src/socketManager src/Interface src/config src/error src/httpTransfer
 
 all:
 	@$(MAKE) -s proname_header
@@ -81,7 +89,7 @@ std_all:
 	@printf "$(SETCURUP)$(CLEARLINE)\r$(FPurple)%-21s$(FGreen)$(TICKBOX)$(RESET)\n" "Compiling $(PRONAME)"
 
 $(PRONAME): $(OBJS)
-	@$(CC) $(CFLAGS) $(OBJS) -o $(PRONAME)
+	@$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(PRONAME)
 
 $(OBJ_DIR)%.o: %.cpp
 ifeq ($(shell test -d $(OBJ_DIR) || echo $$?), 1)
@@ -110,30 +118,30 @@ run: re
 	./$(PRONAME)
 
 arch:
-	-sudo docker rm -f webserv
-	sudo docker-compose -f container/Arch/docker-compose.yml build
-	sudo docker-compose -f container/Arch/docker-compose.yml up
+	-$(SUDO) docker rm -f webserv
+	$(SUDO) docker-compose -f container/Arch/docker-compose.yml build
+	$(SUDO) docker-compose -f container/Arch/docker-compose.yml up
 
 ubuntu:
-	-sudo docker rm -f webserv
-	sudo docker-compose -f container/Ubuntu/docker-compose.yml build
-	sudo docker-compose -f container/Ubuntu/docker-compose.yml up
+	-$(SUDO) docker rm -f webserv
+	$(SUDO) docker-compose -f container/Ubuntu/docker-compose.yml build
+	$(SUDO) docker-compose -f container/Ubuntu/docker-compose.yml up
 
 debian:
-	-sudo docker rm -f webserv
-	sudo docker-compose -f container/Debian/docker-compose.yml build
-	sudo docker-compose -f container/Debian/docker-compose.yml up
+	-$(SUDO) docker rm -f webserv
+	$(SUDO) docker-compose -f container/Debian/docker-compose.yml build
+	$(SUDO) docker-compose -f container/Debian/docker-compose.yml up
 
 alpine:
-	-sudo docker rm -f webserv
-	sudo docker-compose -f ./container/Alpine/docker-compose.yml build
-	sudo docker-compose -f ./container/Alpine/docker-compose.yml up
+	-$(SUDO) docker rm -f webserv
+	$(SUDO) docker-compose -f ./container/Alpine/docker-compose.yml build
+	$(SUDO) docker-compose -f ./container/Alpine/docker-compose.yml up
 
 logs:
-	sudo docker logs webserv
+	$(SUDO) docker logs webserv
 
 restart_docker:
-	sudo docker restart webserv
+	$(SUDO) docker restart webserv
 
 install_brew:
 	@git clone --depth=1 https://github.com/Homebrew/brew $HOME/goinfre/.brew && echo 'export PATH=$HOME/goinfre/.brew/bin:$PATH' >> $HOME/.zshrc && source $HOME/.zshrc && brew update
@@ -148,11 +156,11 @@ ifeq ($(which openssl), $(shell echo "openssl not found"))
 endif
 else ifeq ($(UNAME), Linux)
 ifeq ($(OS_LIKE), Debian)
-	sudo apt-get install openssl
+	$(SUDO) apt-get install openssl
 else ifeq ($(OS_LIKE), Alpine)
-	sudo apk add openssl
+	$(SUDO) apk add openssl
 else ifeq ($(OS_LIKE), Arch)
-	sudo pacman -S openssl
+	$(SUDO) pacman -S openssl
 endif
 endif
 

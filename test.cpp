@@ -1,9 +1,10 @@
 #include "socketManager.hpp"
+#include "Interface.hpp"
 
-void	interface(int fd, struct sockData data) {
-	(void)fd;
-	(void)data;
-	// std::cout << "Interface function called" << std::endl;
+std::string	httpTest(const std::string &request) {
+	(void)request;
+	std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello";
+	return response;
 }
 
 int main() {
@@ -22,6 +23,8 @@ int main() {
 		try {
 			socketManager::addServerSocket(newSocket);
 			std::cout << "SSL Server Socket added" << std::endl;
+			protocolFunction http = &httpTest;
+			Interface::addProtocol(443, http);
 		}
 		catch (const std::exception &e) {
 			std::cout << e.what() << std::endl;
@@ -41,6 +44,8 @@ int main() {
 		try {
 			socketManager::addServerSocket(newSocket);
 			std::cout << "Server Socket added" << std::endl;
+			protocolFunction http = &httpTest;
+			Interface::addProtocol(80, http);
 		}
 		catch (const std::exception &e) {
 			std::cout << e.what() << std::endl;
@@ -60,13 +65,15 @@ int main() {
 		try {
 			socketManager::addServerSocket(newSocket);
 			std::cout << "Server Socket added" << std::endl;
+			protocolFunction http = &httpTest;
+			Interface::addProtocol(8080, http);
 		}
 		catch (const std::exception &e) {
 			std::cout << e.what() << std::endl;
 			std::cout << "Couldn't add the socket to the socketManager" << std::endl;
 		}
 	}
-	InterfaceFunction interfaceFunction = &interface;
+	InterfaceFunction interfaceFunction = &Interface::interface;
 	socketManager::start(interfaceFunction);
 	return 0;
 }

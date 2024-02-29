@@ -1,0 +1,10 @@
+.Vscode
+*test*
+*tmp*
+a.out
+*.o
+obj
+*.exe
+*.dll
+socketManager/
+*.a

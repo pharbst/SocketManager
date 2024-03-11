@@ -1,4 +1,4 @@
-.Vscode
+.vscode
 *test*
 *tmp*
 a.out
@@ -7,4 +7,6 @@ obj
 *.exe
 *.dll
 socketManager/
+socketManager_linux
+socketManager_mac
 *.a

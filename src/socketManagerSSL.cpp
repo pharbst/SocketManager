@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 13:05:01 by pharbst           #+#    #+#             */
-/*   Updated: 2024/02/26 13:58:48 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/11 19:15:29 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,12 @@ void		socketManager::SSLAccept(int fd) {
 	switch (acceptReturn) {
 		case -1:
 			switch (error) {
+				case SSL_ERROR_SSL:
+					SSL_shutdown((SSL*)SOCKET.info.sslData.Context);
+					SSL_free((SSL*)SOCKET.info.sslData.Context);
+					if (_sockets.find(fd) != _sockets.end())
+						removeSocket(fd);
+					throw std::runtime_error("socketManager::SSLAccept:	Certificate is not trusted or is self-signed");
 				case SSL_ERROR_WANT_READ:
 					SOCKET.info.sslData.read = true;
 					SOCKET.info.sslData.write = false;
@@ -94,7 +100,7 @@ void		socketManager::SSLAccept(int fd) {
 					SOCKET.info.sslData.read = false;
 					return ;
 				default:
-					std::cout << "Unhandled SSL Error: " << std::endl;
+					std::cout << error << " error code" << std::endl;
 					ERR_print_errors_fp(stdout);
 					SSL_shutdown((SSL*)SOCKET.info.sslData.Context);
 					SSL_free((SSL*)SOCKET.info.sslData.Context);
@@ -105,6 +111,7 @@ void		socketManager::SSLAccept(int fd) {
 		case 0:
 			return ;
 		case 1:
+			std::cout << "SSL accept success" << std::endl;
 			SOCKET.info.sslData.established = true;
 			SOCKET.info.sslData.read = false;
 			SOCKET.info.sslData.write = false;

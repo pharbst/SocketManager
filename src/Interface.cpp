@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 12:01:41 by pharbst           #+#    #+#             */
-/*   Updated: 2024/02/27 19:28:24 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/11 19:32:45 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,14 +18,15 @@ std::map<int, std::string>				Interface::_outputBuffer;
 void	Interface::interface(int sock, struct sockData data) {
 	// std::cout << "interface called" << std::endl;
 	if (data.READ) {
+		socketManager::detectActivity(sock);
 		std::string		request;
 		std::string		response;
-		if (readFromSocket(sock, request)) {
+		if (readFromSocket(sock, data, request)) {
 			std::cout << "readFromSocket failed" << std::endl;
 			socketManager::removeSocket(sock);
 			return ;	// remove client
 		}
-		if (passRequest(request, response)) {
+		if (passRequest(request, response, data.info.port)) {
 			std::cout << "passRequest failed" << std::endl;
 			socketManager::removeSocket(sock);
 			return ;	// remove client
@@ -34,9 +35,10 @@ void	Interface::interface(int sock, struct sockData data) {
 		_outputBuffer.insert(std::pair<int, std::string>(sock, response));
 	}
 	else if (data.WRITE && _outputBuffer.find(sock) != _outputBuffer.end()) {
+		socketManager::detectActivity(sock);
 		std::cout << "writing to socket: " << sock << std::endl;
 		std::string	response = _outputBuffer[sock];
-		if (writeToSocket(sock, response)) {
+		if (writeToSocket(sock, data, response)) {
 			std::cout << "writeToSocket failed" << std::endl;
 			socketManager::removeSocket(sock);
 			_outputBuffer.erase(sock);

@@ -8,9 +8,9 @@ std::string	httpTest(const std::string &request) {
 }
 
 int main() {
+	struct socketParameter	newSocket;
+	struct sockaddr_in		sockAddr;
 	{
-		struct socketParameter	newSocket;
-		struct sockaddr_in		sockAddr;
 		memset(&sockAddr, 0, sizeof(sockAddr));
 		sockAddr.sin_family = IPV4;
 		sockAddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -32,8 +32,6 @@ int main() {
 		}
 	}
 	{
-		struct socketParameter	newSocket;
-		struct sockaddr_in		sockAddr;
 		memset(&sockAddr, 0, sizeof(sockAddr));
 		sockAddr.sin_family = IPV4;
 		sockAddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -53,8 +51,6 @@ int main() {
 		}
 	}
 	{
-		struct socketParameter	newSocket;
-		struct sockaddr_in		sockAddr;
 		memset(&sockAddr, 0, sizeof(sockAddr));
 		sockAddr.sin_family = IPV4;
 		sockAddr.sin_addr.s_addr = htonl(INADDR_ANY);

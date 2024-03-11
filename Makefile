@@ -6,7 +6,7 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/20 21:11:03 by pharbst           #+#    #+#              #
-#    Updated: 2024/02/27 19:31:38 by pharbst          ###   ########.fr        #
+#    Updated: 2024/03/11 18:39:59 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ INC_DIR		:= 	-I./include/
 
 ifeq ($(UNAME), Darwin)
 SUDO		:= 
-PRONAME		 = socketManager.out
+PRONAME		 = socketManager_mac
 SSLCFLAGS	:= -I$(shell brew --prefix)/opt/openssl@3/include
 SSLLDFLAGS	:= -L$(shell brew --prefix)/opt/openssl@3/lib -lssl -lcrypto
 CFLAGS		:= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 $(SSLCFLAGS) $(INC_DIR)
@@ -30,9 +30,6 @@ endif
 
 CC			 = c++
 
-# -MMD and -MP are used to create dependecy files
-
-
 # add source files with header with the same name
 SOURCE		 =	socketManager.cpp \
 				Interface.cpp
@@ -40,11 +37,11 @@ SOURCE		 =	socketManager.cpp \
 HEADER		 = $(addprefix $(INC_DIR), $(SOURCE:.cpp=.hpp))
 
 # add other header files here
-HEADER		+= 
+HEADER		+= socketManagerBase.hpp
 
 # add source files without header with the same name and the file with the main function has to be the first in the list
 SRCS		 =	test.cpp \
-				socketManagerInit.cpp \
+				socketManagerTools.cpp \
 				socketManagerSSL.cpp \
 				socketManagerSEPOLL.cpp \
 				InterfaceTools.cpp \

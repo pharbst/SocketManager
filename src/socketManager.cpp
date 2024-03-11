@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 16:33:00 by pharbst           #+#    #+#             */
-/*   Updated: 2024/02/25 23:57:44 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/11 19:17:16 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,12 @@
 
 std::map<int, struct sockData>		socketManager::_sockets;
 bool								socketManager::_ssl = false;
+unsigned long						socketManager::_keepAlive = 0;
 
 void	socketManager::start(InterfaceFunction interfaceFunction) {
 	std::cout << "socketManager starting" << std::endl;
 	if (!_ssl)
 		initSSL();
-	printSocketMap();
 	SEPOLL(interfaceFunction);
 }
 
@@ -32,51 +32,58 @@ void	socketManager::start(InterfaceFunction interfaceFunction) {
 void	socketManager::addServerSocket(struct socketParameter &params) {
 	if (!_ssl)
 		initSSL();
-	// create a server socket
-	int fd = socket(params.interfaceAddress->sa_family, params.protocol, IP);
-	// set the socket to non-blocking
-	setSocketNonBlocking(fd);
-	// bind the socket to the address
-	bindSocket(fd, params.interfaceAddress);
-	// listen for incoming connections
-	listenSocket(fd);
-	// create the socketData
-	struct sockData data; {	
-		data.parentSocket = _sockets.end();
+	int proto;
+	if (!params.protocol)
+		proto = TCP;
+	else if (params.protocol != TCP && params.protocol != UDP)
+		throw std::runtime_error("socketManager::addServerSocket:	invalid protocol");
+	else
+		proto = params.protocol;
+	int fd = socket(params.interfaceAddress->sa_family, proto, IP);
+	if (fd == -1)
+		throw std::runtime_error("socketManager::addServerSocket:	socket creation failed");
+	struct sockData data;
+	try {
+		setSocketNonBlocking(fd);
+		bindSocket(fd, params.interfaceAddress);
+		listenSocket(fd);
 		data.info.port = extractPort(params.interfaceAddress);
-		data.info.read = false;
-		data.info.write = false;
-		if (params.ssl) {
-			data.info.ssl = true;
-			data.info.sslData.Context = createSSLContext(params);
-		}
-		else
-			data.info.ssl = false;
+		// delete params.interfaceAddress;
 	}
+	catch (std::exception &e) {
+		// delete params.interfaceAddress;
+		throw e;
+	}
+	data.parentSocket = _sockets.end();
+	data.info.lastActivity = 0;
+	data.info.read = false;
+	data.info.write = false;
+	data.info.sslData.established = false;
+	if (params.ssl) {
+		data.info.ssl = true;
+		data.info.sslData.Context = createSSLContext(params);
+	}
+	else
+		data.info.ssl = false;
 	_sockets.insert(std::pair<int, struct sockData>(fd, data));
 }
 
-// void	socketManager::addClientSocket(const struct socketInfo &info) {
-// 	if (!_ssl)
-// 		initSSL();
-// 	// create a client socket
-// 	// connect to the server
-// }
-
 void	socketManager::removeSocket(int fd) {
 	SEPOLLREMOVE(fd);
+	_sockets.erase(fd);
+	close(fd);
 }
 
 # define _SERVER (it->second.parentSocket == _sockets.end())
 
 void	socketManager::printSocketMap() {
-	// print the socket map
-	std::cout << "╔══════Socket Map═══════════╗" << std::endl;
-	std::cout << "║  fd  ║ port ║server║  SSL ║" << std::endl;
+	unsigned long currentTime = getCurrentTime();
+	std::cout << "╔══════════════════════Socket Map══════════════════════╗" << std::endl;
+	std::cout << "║   fd   ║  port  ║ server ║   SSL  ║  esta  ║ timeout ║" << std::endl;
 	for (std::map<int, struct sockData>::iterator it = _sockets.begin(); it != _sockets.end(); it++) {
-		printf("║%6d║%6d║%6d║%6d║\n", it->first, it->second.info.port, _SERVER, it->second.info.ssl);
+		printf("║%8d║%8d║%8d║%8d║%8d║%9ld║\n", it->first, it->second.info.port, _SERVER, it->second.info.ssl, it->second.info.sslData.established ? 1 : 0, (it->second.parentSocket == _sockets.end()) ? 0 : (_keepAlive > 0) ? currentTime - it->second.info.lastActivity : 0);
 	}
-	std::cout << "╚═══════════════════════════╝" << std::endl;
+	std::cout << "╚══════════════════════════════════════════════════════╝" << std::endl;
 }
 
 

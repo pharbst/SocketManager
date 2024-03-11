@@ -1,3 +1,4 @@
+#include "socketManagerBase.hpp"
 #include "socketManager.hpp"
 #include "Interface.hpp"
 

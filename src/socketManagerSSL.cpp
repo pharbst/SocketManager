@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 13:05:01 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/11 19:15:29 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/11 19:43:37 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,10 +86,7 @@ void		socketManager::SSLAccept(int fd) {
 		case -1:
 			switch (error) {
 				case SSL_ERROR_SSL:
-					SSL_shutdown((SSL*)SOCKET.info.sslData.Context);
-					SSL_free((SSL*)SOCKET.info.sslData.Context);
-					if (_sockets.find(fd) != _sockets.end())
-						removeSocket(fd);
+					removeSocket(fd);
 					throw std::runtime_error("socketManager::SSLAccept:	Certificate is not trusted or is self-signed");
 				case SSL_ERROR_WANT_READ:
 					SOCKET.info.sslData.read = true;
@@ -102,10 +99,7 @@ void		socketManager::SSLAccept(int fd) {
 				default:
 					std::cout << error << " error code" << std::endl;
 					ERR_print_errors_fp(stdout);
-					SSL_shutdown((SSL*)SOCKET.info.sslData.Context);
-					SSL_free((SSL*)SOCKET.info.sslData.Context);
-					if (_sockets.find(fd) != _sockets.end())
-						removeSocket(fd);
+					removeSocket(fd);
 					return ;
 			}
 		case 0:
@@ -118,17 +112,11 @@ void		socketManager::SSLAccept(int fd) {
 			return ;
 		case 2:
 			std::cout << "SSL accept error" << std::endl;
-			SSL_shutdown((SSL*)SOCKET.info.sslData.Context);
-			SSL_free((SSL*)SOCKET.info.sslData.Context);
-			if (_sockets.find(fd) != _sockets.end())
-				removeSocket(fd);
+			removeSocket(fd);
 			return ;
 		default:
 			std::cout << "Something went wrong with SSL_accept" << std::endl;
-			SSL_shutdown((SSL*)SOCKET.info.sslData.Context);
-			SSL_free((SSL*)SOCKET.info.sslData.Context);
-			if (_sockets.find(fd) != _sockets.end())
-				removeSocket(fd);
+			removeSocket(fd);
 			return ;
 	}
 	return ;

@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 16:33:00 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/11 19:17:16 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/11 20:25:05 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,14 @@ void	socketManager::addServerSocket(struct socketParameter &params) {
 }
 
 void	socketManager::removeSocket(int fd) {
+	if (_sockets.find(fd) == _sockets.end())
+		return ;
+	if (SSLSOCKET) {
+		SSL_shutdown((SSL*)SOCKET.info.sslData.Context);
+		SSL_free((SSL*)SOCKET.info.sslData.Context);
+	}
+	else if (SSLSOCKET && SERVERSOCKET)
+		SSL_CTX_free((SSL_CTX*)SOCKET.info.sslData.Context);
 	SEPOLLREMOVE(fd);
 	_sockets.erase(fd);
 	close(fd);

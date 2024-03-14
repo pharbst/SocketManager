@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   socketManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
+/*   By: pharbst <pharbst@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 14:19:38 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/11 20:11:06 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/14 21:54:24 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,12 +78,12 @@ class socketManager {
 	#elif defined(__APPLE__)
 		static void							socketKqueue(InterfaceFunction interfaceFunction);
 		static void							initKqueue();
-		static void							kqueueAdd(int newClient, int serverSocket);
+		static void							kqueueAdd(int newClient, struct sockData data);
 		static void							kqueueRemove(int fd);
 	#else
 		static void							socketSelect(InterfaceFunction interfaceFunction);
 		static void							initSelect();
-		static void							selectAdd(int newClient, int serverSocket);
+		static void							selectAdd(int newClient, struct sockData data);
 		static void							selectRemove(int fd);
 	#endif
 };

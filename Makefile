@@ -3,27 +3,27 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
+#    By: pharbst <pharbst@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/20 21:11:03 by pharbst           #+#    #+#              #
-#    Updated: 2024/03/11 18:39:59 by pharbst          ###   ########.fr        #
+#    Updated: 2024/03/14 22:07:17 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 include color.mk
 
+PRONAME		 = libsocketManager.a
+
 INC_DIR		:= 	-I./include/
 
 ifeq ($(UNAME), Darwin)
 SUDO		:= 
-PRONAME		 = socketManager_mac
 SSLCFLAGS	:= -I$(shell brew --prefix)/opt/openssl@3/include
 SSLLDFLAGS	:= -L$(shell brew --prefix)/opt/openssl@3/lib -lssl -lcrypto
 CFLAGS		:= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 $(SSLCFLAGS) $(INC_DIR)
 LDFLAGS		:= $(SSLLDFLAGS)
 else ifeq ($(UNAME), Linux)
 SUDO		:= sudo
-PRONAME		 = socketManager_linux
 CFLAGS		:= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 $(INC_DIR)
 LDFLAGS		:= -lssl -lcrypto
 endif
@@ -40,8 +40,7 @@ HEADER		 = $(addprefix $(INC_DIR), $(SOURCE:.cpp=.hpp))
 HEADER		+= socketManagerBase.hpp
 
 # add source files without header with the same name and the file with the main function has to be the first in the list
-SRCS		 =	test.cpp \
-				socketManagerTools.cpp \
+SRCS		 =	socketManagerTools.cpp \
 				socketManagerSSL.cpp \
 				socketManagerSEPOLL.cpp \
 				InterfaceTools.cpp \
@@ -62,21 +61,12 @@ VPATH		:= src src/socketManager src/Interface src/config src/error src/httpTrans
 
 all:
 	@$(MAKE) -s proname_header
+	@$(MAKE) -s install_openssl
 	@$(MAKE) -s std_all
 
-test: $(PRONAME)
-	@$(MAKE) -s proname_header
-	@$(MAKE) -s std_all
-	@c++ $(CFLAGS) -o test test.cpp $(PRONAME)
-	@./test
+install_openssl:
+	@rm -rf $(HOME)/.brew && rm -rf $(HOME)/goinfre/.brew && git clone --depth=1 https://github.com/Homebrew/brew $HOME/goinfre/.brew && echo 'export PATH=$HOME/goinfre/.brew/bin:$PATH' >> $HOME/.zshrc && source $HOME/.zshrc && brew update
 
-# ssl:
-# 	@$(MAKE) -s proname_header
-# ifeq ($(UNAME), Darwin)
-# 	@$(MAKE) -s std_all SSLCFLAGS="-D__SSL__ -I$(shell brew --prefix)/opt/openssl@3/include" SSLLDFLAGS="-L$(shell brew --prefix)/opt/openssl@3/lib -lssl -lcrypto"
-# else ifeq ($(UNAME), Linux)
-# 	@$(MAKE) -s std_all -D__SSL__ -lssl -lcrypto
-# endif
 
 std_all:
 	@printf "%s$(RESET)\n" "$(FPurple)Compiling $(PRONAME)"
@@ -86,7 +76,7 @@ std_all:
 	@printf "$(SETCURUP)$(CLEARLINE)\r$(FPurple)%-21s$(FGreen)$(TICKBOX)$(RESET)\n" "Compiling $(PRONAME)"
 
 $(PRONAME): $(OBJS)
-	@$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(PRONAME)
+	@ar rcs $(PRONAME) $(OBJS)
 
 $(OBJ_DIR)%.o: %.cpp
 ifeq ($(shell test -d $(OBJ_DIR) || echo $$?), 1)

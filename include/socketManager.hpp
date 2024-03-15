@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   socketManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pharbst <pharbst@student.42.fr>            +#+  +:+       +#+        */
+/*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/20 14:19:38 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/14 21:54:24 by pharbst          ###   ########.fr       */
+/*   Created: 2024/03/15 15:38:59 by pharbst           #+#    #+#             */
+/*   Updated: 2024/03/15 15:39:02 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 

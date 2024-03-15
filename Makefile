@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: pharbst <pharbst@student.42.fr>            +#+  +:+       +#+         #
+#    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/02/20 21:11:03 by pharbst           #+#    #+#              #
-#    Updated: 2024/03/14 22:07:17 by pharbst          ###   ########.fr        #
+#    Created: 2024/03/15 15:39:29 by pharbst           #+#    #+#              #
+#    Updated: 2024/03/15 17:08:26 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,8 +18,8 @@ INC_DIR		:= 	-I./include/
 
 ifeq ($(UNAME), Darwin)
 SUDO		:= 
-SSLCFLAGS	:= -I$(shell brew --prefix)/opt/openssl@3/include
-SSLLDFLAGS	:= -L$(shell brew --prefix)/opt/openssl@3/lib -lssl -lcrypto
+SSLCFLAGS	:= -I$(shell brew --prefix)/opt/openssl@3/include/
+SSLLDFLAGS	:= -L$(shell brew --prefix)/opt/openssl@3/lib/ -lssl -lcrypto
 CFLAGS		:= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 $(SSLCFLAGS) $(INC_DIR)
 LDFLAGS		:= $(SSLLDFLAGS)
 else ifeq ($(UNAME), Linux)
@@ -57,23 +57,42 @@ OBJS		 = $(addprefix $(OBJ_DIR), $(SRCS:.cpp=.o))
 
 
 # in case of subdirectories in the src folder add them here
-VPATH		:= src src/socketManager src/Interface src/config src/error src/httpTransfer
-
+VPATH		:= src
 all:
-	@$(MAKE) -s proname_header
-	@$(MAKE) -s install_openssl
-	@$(MAKE) -s std_all
+	@$(MAKE) -s proname_header 2> /dev/null
+	@$(MAKE) -s std_all 2> /dev/null
 
 install_openssl:
-	@rm -rf $(HOME)/.brew && rm -rf $(HOME)/goinfre/.brew && git clone --depth=1 https://github.com/Homebrew/brew $HOME/goinfre/.brew && echo 'export PATH=$HOME/goinfre/.brew/bin:$PATH' >> $HOME/.zshrc && source $HOME/.zshrc && brew update
+ifeq ($(UNAME), Darwin)
+	@$(MAKE) -s install_openssl_mac
+else ifeq ($(OS_LIKE), Debian)
+	@$(SUDO) apt-get install openssl
+else ifeq ($(OS_LIKE), Alpine)
+	@$(SUDO) apk add openssl
+else ifeq ($(OS_LIKE), Arch)
+	@$(SUDO) pacman -S openssl
+endif
 
+
+install_openssl_mac:
+ifeq ($(shell test -d $(HOME)/.brew || echo $$?), 1)
+ifeq ($(shell test -d $(HOME)/goinfre/.brew || echo $$?), 1)
+	@printf "%-40s$(RESET)" "$(FCyan)installing brew"
+	@rm -rf $(HOME)/.brew && rm -rf $(HOME)/goinfre/.brew && git clone --depth=1 https://github.com/Homebrew/brew $(HOME)/goinfre/.brew && echo 'export PATH=$(HOME)/goinfre/.brew/bin:$$PATH' >> $(HOME)/.zshrc && source $(HOME)/.zshrc && brew update > /dev/null 2>&1
+	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
+endif
+endif
+	@printf "%-40s$(RESET)" "$(FBlue)Installing openssl"
+	@brew install openssl >/dev/null 2>&1
+	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
 
 std_all:
+	@$(MAKE) -s install_openssl
 	@printf "%s$(RESET)\n" "$(FPurple)Compiling $(PRONAME)"
 	@-include $(OBJS:.o=.d)
 	@printf "$(SETCURUP)$(CLEARLINE)"
 	@$(MAKE) -s $(PRONAME)
-	@printf "$(SETCURUP)$(CLEARLINE)\r$(FPurple)%-21s$(FGreen)$(TICKBOX)$(RESET)\n" "Compiling $(PRONAME)"
+	@printf "$(SETCURUP)$(CLEARLINE)\r$(FPurple)%-33s$(FGreen)$(TICKBOX)$(RESET)\n" "Compiling $(PRONAME)"
 
 $(PRONAME): $(OBJS)
 	@ar rcs $(PRONAME) $(OBJS)
@@ -83,12 +102,12 @@ ifeq ($(shell test -d $(OBJ_DIR) || echo $$?), 1)
 	printf "$(CLEARLINE)\r$(Yellow)creting obj dir$(RESET)"
 	@mkdir -p $(OBJ_DIR)
 endif
-	@printf "$(CLEARLINE)\r%-28s$(RESET)" "$(Yellow)Compiling $< ..."
-	@$(CC) $(CFLAGS) $(SSLCFLAGS) -c $< -o $@
+	@printf "$(CLEARLINE)\r%-40s$(RESET)" "$(Yellow)Compiling $< ..."
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	@$(MAKE) -s proname_header
-	@printf "%-28s$(RESET)" "$(FRed)Cleaning $(PRONAME)"
+	@printf "%-40s$(RESET)" "$(FRed)Cleaning $(PRONAME)"
 	@$(MAKE) -s std_clean
 	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
 
@@ -97,8 +116,8 @@ fclean:
 	@$(MAKE) -s cleanator
 
 re:
-	@$(MAKE) -s proname_header
-	@$(MAKE) -s cleanator
+	@$(MAKE) -s proname_header 2> /dev/null
+	@$(MAKE) -s cleanator 2> /dev/null
 	@$(MAKE) -s std_all
 
 run: re
@@ -130,32 +149,11 @@ logs:
 restart_docker:
 	$(SUDO) docker restart webserv
 
-install_brew:
-	@git clone --depth=1 https://github.com/Homebrew/brew $HOME/goinfre/.brew && echo 'export PATH=$HOME/goinfre/.brew/bin:$PATH' >> $HOME/.zshrc && source $HOME/.zshrc && brew update
-
-install_openssl:
-ifeq ($(UNAME), Darwin)
-ifeq ($(which brew), $(shell echo "brew not found"))
-	$(MAKE) -s install_brew
-endif
-ifeq ($(which openssl), $(shell echo "openssl not found"))
-	brew install openssl
-endif
-else ifeq ($(UNAME), Linux)
-ifeq ($(OS_LIKE), Debian)
-	$(SUDO) apt-get install openssl
-else ifeq ($(OS_LIKE), Alpine)
-	$(SUDO) apk add openssl
-else ifeq ($(OS_LIKE), Arch)
-	$(SUDO) pacman -S openssl
-endif
-endif
-
 std_clean:
 	@rm -rf $(OBJ_DIR)
 
 cleanator:
-	@printf "%-28s$(RESET)" "$(FRed)FCleaning $(PRONAME)"
+	@printf "%-40s$(RESET)" "$(FRed)FCleaning $(PRONAME)"
 	@rm -rf $(OBJ_DIR)
 	@rm -f $(PRONAME)
 	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"

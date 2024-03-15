@@ -6,7 +6,7 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 15:39:29 by pharbst           #+#    #+#              #
-#    Updated: 2024/03/15 17:08:26 by pharbst          ###   ########.fr        #
+#    Updated: 2024/03/15 18:31:07 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -65,12 +65,16 @@ all:
 install_openssl:
 ifeq ($(UNAME), Darwin)
 	@$(MAKE) -s install_openssl_mac
-else ifeq ($(OS_LIKE), Debian)
-	@$(SUDO) apt-get install openssl
-else ifeq ($(OS_LIKE), Alpine)
-	@$(SUDO) apk add openssl
-else ifeq ($(OS_LIKE), Arch)
-	@$(SUDO) pacman -S openssl
+else
+	@printf "%-40s$(RESET)" "$(FBlue)Installing openssl"
+ifeq ($(filter $(OS_LIKE),Debian)$(filter $(OS),Debian),Debian)
+	@$(SUDO) apt-get -y install openssl > /dev/null 2>&1
+else ifeq ($(filter $(OS_LIKE),Alpine)$(filter $(OS),Alpine),Alpine)
+	@$(SUDO) apk add openssl > /dev/null 2>&1
+else ifeq ($(filter $(OS_LIKE),Arch)$(filter $(OS),Arch),Arch)
+	@$(SUDO) pacman -S --noconfirm openssl > /dev/null 2>&1
+endif
+	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
 endif
 
 
@@ -89,8 +93,7 @@ endif
 std_all:
 	@$(MAKE) -s install_openssl
 	@printf "%s$(RESET)\n" "$(FPurple)Compiling $(PRONAME)"
-	@-include $(OBJS:.o=.d)
-	@printf "$(SETCURUP)$(CLEARLINE)"
+	@-include $(OBJS:.o=.d) 2> /dev/null
 	@$(MAKE) -s $(PRONAME)
 	@printf "$(SETCURUP)$(CLEARLINE)\r$(FPurple)%-33s$(FGreen)$(TICKBOX)$(RESET)\n" "Compiling $(PRONAME)"
 

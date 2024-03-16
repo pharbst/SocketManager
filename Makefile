@@ -6,7 +6,7 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 15:39:29 by pharbst           #+#    #+#              #
-#    Updated: 2024/03/15 18:31:07 by pharbst          ###   ########.fr        #
+#    Updated: 2024/03/16 14:15:22 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,20 +31,23 @@ endif
 CC			 = c++
 
 # add source files with header with the same name
-SOURCE		 =	socketManager.cpp \
-				Interface.cpp
+# SOURCE		 =	socketManager.cpp \
+# 				Interface.cpp
 
-HEADER		 = $(addprefix $(INC_DIR), $(SOURCE:.cpp=.hpp))
+# HEADER		 = $(addprefix $(INC_DIR), $(SOURCE:.cpp=.hpp))
 
 # add other header files here
-HEADER		+= socketManagerBase.hpp
+HEADER		 =	socketManagerBase.hpp \
+				socketManager.hpp \
+				Interface.hpp
 
 # add source files without header with the same name and the file with the main function has to be the first in the list
-SRCS		 =	socketManagerTools.cpp \
+SRCS		 =	Interface.cpp \
+				InterfaceTools.cpp \
+				socketManager.cpp \
+				socketManagerTools.cpp \
 				socketManagerSSL.cpp \
 				socketManagerSEPOLL.cpp \
-				InterfaceTools.cpp \
-				$(SOURCE)
 
 OBJ_DIR		 = ./obj/
 ifeq ($(UNAME), Darwin)
@@ -68,11 +71,17 @@ ifeq ($(UNAME), Darwin)
 else
 	@printf "%-40s$(RESET)" "$(FBlue)Installing openssl"
 ifeq ($(filter $(OS_LIKE),Debian)$(filter $(OS),Debian),Debian)
+ifeq ($(shell dpkg -l | grep -c openssl), 0)
 	@$(SUDO) apt-get -y install openssl > /dev/null 2>&1
+endif
 else ifeq ($(filter $(OS_LIKE),Alpine)$(filter $(OS),Alpine),Alpine)
+ifeq ($(shell apk list | grep -c openssl), 0)
 	@$(SUDO) apk add openssl > /dev/null 2>&1
+endif
 else ifeq ($(filter $(OS_LIKE),Arch)$(filter $(OS),Arch),Arch)
+ifeq ($(shell pacman -Q | grep -c openssl), 0)
 	@$(SUDO) pacman -S --noconfirm openssl > /dev/null 2>&1
+endif
 endif
 	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
 endif
@@ -92,7 +101,7 @@ endif
 
 std_all:
 	@$(MAKE) -s install_openssl
-	@printf "%s$(RESET)\n" "$(FPurple)Compiling $(PRONAME)"
+# @printf "%s$(RESET)\n" "$(FPurple)Compiling $(PRONAME)"
 	@-include $(OBJS:.o=.d) 2> /dev/null
 	@$(MAKE) -s $(PRONAME)
 	@printf "$(SETCURUP)$(CLEARLINE)\r$(FPurple)%-33s$(FGreen)$(TICKBOX)$(RESET)\n" "Compiling $(PRONAME)"

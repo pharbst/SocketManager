@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 15:38:59 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/15 15:39:02 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/15 18:54:39 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,19 @@
 
 class socketManager {
 	public:
+		// function to start the socket manager
 		static void		start(InterfaceFunction interfaceFunction);
-		// static void		stop();
+		// function to add a server socket
 		static void		addServerSocket(struct socketParameter &param);
+		// function to remove a socket by its fd from the socket manager
 		static void		removeSocket(int fd);
+		// funciton to print the whole socket map
+		static void		printSocketMap();
+		// function to tell the socketmanager that a read or write call has been performed on a socket
+		static void		detectActivity(int fd);
+		// static void		stop();
 		// static void		initSSL();
 		// static void		destroySSL();
-		static void		printSocketMap();
-		static void		detectActivity(int fd);
 
 	private:
 	/************************************************/

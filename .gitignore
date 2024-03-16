@@ -1,0 +1,12 @@
+.vscode
+*test*
+*tmp*
+a.out
+*.o
+obj
+*.exe
+*.dll
+socketManager/
+socketManager_linux
+socketManager_mac
+*.a

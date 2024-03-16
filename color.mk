@@ -6,7 +6,7 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/03 18:16:49 by pharbst           #+#    #+#              #
-#    Updated: 2024/01/18 19:28:03 by pharbst          ###   ########.fr        #
+#    Updated: 2024/03/15 18:24:33 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@
 # Operating System tracking
 # **************************************************************************** #
 UNAME		=	$(shell uname)
-OS			=	$(shell cat /etc/os-release | grep -e NAME | cut -d= -f2 | tr -d '"')
+OS			=	$(shell cat /etc/os-release | grep '^NAME=' | cut -d'=' -f2- | tr -d '"' | sed 's/ Linux//')
 OS_LIKE		=	$(shell cat /etc/os-release | grep ID_LIKE | cut -d= -f2)
 
 ifeq ($(UNAME), Darwin)

@@ -5,102 +5,121 @@
 #                                                     +:+ +:+         +:+      #
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/02/20 21:11:03 by pharbst           #+#    #+#              #
-#    Updated: 2024/02/25 20:14:43 by pharbst          ###   ########.fr        #
+#    Created: 2024/03/15 15:39:29 by pharbst           #+#    #+#              #
+#    Updated: 2024/03/16 14:15:22 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 include color.mk
 
+PRONAME		 = libsocketManager.a
+
+INC_DIR		:= 	-I./include/
+
 ifeq ($(UNAME), Darwin)
-PRONAME = socketManager
+SUDO		:= 
+SSLCFLAGS	:= -I$(shell brew --prefix)/opt/openssl@3/include/
+SSLLDFLAGS	:= -L$(shell brew --prefix)/opt/openssl@3/lib/ -lssl -lcrypto
+CFLAGS		:= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 $(SSLCFLAGS) $(INC_DIR)
+LDFLAGS		:= $(SSLLDFLAGS)
 else ifeq ($(UNAME), Linux)
-PRONAME = socketManager_linux
+SUDO		:= sudo
+CFLAGS		:= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 $(INC_DIR)
+LDFLAGS		:= -lssl -lcrypto
 endif
 
-CC		= c++
-
-# SSLCFLAGS	:= -D__SSL__ -I$(shell brew --prefix)/opt/openssl@3/include
-# SSLLDFLAGS	:= -L$(shell brew --prefix)/opt/openssl@3/lib -lssl -lcrypto
-# -MMD and -MP are ussed to create dependecy files
-CFLAGS	= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 -lssl -lcrypto $(INC_DIR)
-
-INC_DIR	= 	-I./include/ \
-			-I./include/socketManager/ \
-			-I./include/Interface/ \
-			# -I./include/config/ \
-			# -I./include/error/ \
-			# -I./include/httpTransfer/ \
+CC			 = c++
 
 # add source files with header with the same name
-SOURCE	=	socketManager.cpp \
-			# Config.cpp \
-			# Error.cpp \
-			# httpTransfer.cpp
+# SOURCE		 =	socketManager.cpp \
+# 				Interface.cpp
 
-HEADER	= $(addprefix $(INC_DIR), $(SOURCE:.cpp=.hpp))
+# HEADER		 = $(addprefix $(INC_DIR), $(SOURCE:.cpp=.hpp))
 
 # add other header files here
-HEADER	+= 
+HEADER		 =	socketManagerBase.hpp \
+				socketManager.hpp \
+				Interface.hpp
 
 # add source files without header with the same name and the file with the main function has to be the first in the list
-SRCS	=	socketManagerInit.cpp \
-			socketManagerSSL.cpp \
-			socketManagerSEPOLL.cpp \
-			test.cpp \
-			$(SOURCE)
+SRCS		 =	Interface.cpp \
+				InterfaceTools.cpp \
+				socketManager.cpp \
+				socketManagerTools.cpp \
+				socketManagerSSL.cpp \
+				socketManagerSEPOLL.cpp \
 
-OBJ_DIR	= ./obj/
+OBJ_DIR		 = ./obj/
 ifeq ($(UNAME), Darwin)
-OBJ_DIR = ./obj/mac/
+OBJ_DIR 	 = ./obj/mac/
 else ifeq ($(UNAME), Linux)
-OBJ_DIR = ./obj/linux/
+OBJ_DIR 	 = ./obj/linux/
 endif
 
-OBJS = $(addprefix $(OBJ_DIR), $(SRCS:.cpp=.o))
+OBJS		 = $(addprefix $(OBJ_DIR), $(SRCS:.cpp=.o))
 
 
 # in case of subdirectories in the src folder add them here
-VPATH := src src/socketManager src/Interface src/config src/error src/httpTransfer
-
+VPATH		:= src
 all:
-	@$(MAKE) -s proname_header
-	@$(MAKE) -s std_all
+	@$(MAKE) -s proname_header 2> /dev/null
+	@$(MAKE) -s std_all 2> /dev/null
 
-test: $(PRONAME)
-	@$(MAKE) -s proname_header
-	@$(MAKE) -s std_all
-	@c++ $(CFLAGS) -o test test.cpp $(PRONAME)
-	@./test
+install_openssl:
+ifeq ($(UNAME), Darwin)
+	@$(MAKE) -s install_openssl_mac
+else
+	@printf "%-40s$(RESET)" "$(FBlue)Installing openssl"
+ifeq ($(filter $(OS_LIKE),Debian)$(filter $(OS),Debian),Debian)
+ifeq ($(shell dpkg -l | grep -c openssl), 0)
+	@$(SUDO) apt-get -y install openssl > /dev/null 2>&1
+endif
+else ifeq ($(filter $(OS_LIKE),Alpine)$(filter $(OS),Alpine),Alpine)
+ifeq ($(shell apk list | grep -c openssl), 0)
+	@$(SUDO) apk add openssl > /dev/null 2>&1
+endif
+else ifeq ($(filter $(OS_LIKE),Arch)$(filter $(OS),Arch),Arch)
+ifeq ($(shell pacman -Q | grep -c openssl), 0)
+	@$(SUDO) pacman -S --noconfirm openssl > /dev/null 2>&1
+endif
+endif
+	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
+endif
 
-# ssl:
-# 	@$(MAKE) -s proname_header
-# ifeq ($(UNAME), Darwin)
-# 	@$(MAKE) -s std_all SSLCFLAGS="-D__SSL__ -I$(shell brew --prefix)/opt/openssl@3/include" SSLLDFLAGS="-L$(shell brew --prefix)/opt/openssl@3/lib -lssl -lcrypto"
-# else ifeq ($(UNAME), Linux)
-# 	@$(MAKE) -s std_all -D__SSL__ -lssl -lcrypto
-# endif
+
+install_openssl_mac:
+ifeq ($(shell test -d $(HOME)/.brew || echo $$?), 1)
+ifeq ($(shell test -d $(HOME)/goinfre/.brew || echo $$?), 1)
+	@printf "%-40s$(RESET)" "$(FCyan)installing brew"
+	@rm -rf $(HOME)/.brew && rm -rf $(HOME)/goinfre/.brew && git clone --depth=1 https://github.com/Homebrew/brew $(HOME)/goinfre/.brew && echo 'export PATH=$(HOME)/goinfre/.brew/bin:$$PATH' >> $(HOME)/.zshrc && source $(HOME)/.zshrc && brew update > /dev/null 2>&1
+	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
+endif
+endif
+	@printf "%-40s$(RESET)" "$(FBlue)Installing openssl"
+	@brew install openssl >/dev/null 2>&1
+	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
 
 std_all:
-	@printf "%s$(RESET)\n" "$(FPurple)Compiling $(PRONAME)"
-	@-include $(OBJS:.o=.d)
+	@$(MAKE) -s install_openssl
+# @printf "%s$(RESET)\n" "$(FPurple)Compiling $(PRONAME)"
+	@-include $(OBJS:.o=.d) 2> /dev/null
 	@$(MAKE) -s $(PRONAME)
-	@printf "$(SETCURUP)$(CLEARLINE)$(SETCURUP)$(CLEARLINE)\r$(FPurple)%-21s$(FGreen)$(TICKBOX)$(RESET)\n" "Compiling $(PRONAME)"
+	@printf "$(SETCURUP)$(CLEARLINE)\r$(FPurple)%-33s$(FGreen)$(TICKBOX)$(RESET)\n" "Compiling $(PRONAME)"
 
 $(PRONAME): $(OBJS)
-	@$(CC) $(CFLAGS) $(OBJS) -o $(PRONAME)
+	@ar rcs $(PRONAME) $(OBJS)
 
 $(OBJ_DIR)%.o: %.cpp
 ifeq ($(shell test -d $(OBJ_DIR) || echo $$?), 1)
 	printf "$(CLEARLINE)\r$(Yellow)creting obj dir$(RESET)"
 	@mkdir -p $(OBJ_DIR)
 endif
-	@printf "$(CLEARLINE)\r%-28s$(RESET)" "$(Yellow)Compiling $< ..."
-	@$(CC) $(CFLAGS) $(SSLCFLAGS) -c $< -o $@
+	@printf "$(CLEARLINE)\r%-40s$(RESET)" "$(Yellow)Compiling $< ..."
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	@$(MAKE) -s proname_header
-	@printf "%-28s$(RESET)" "$(FRed)Cleaning $(PRONAME)"
+	@printf "%-40s$(RESET)" "$(FRed)Cleaning $(PRONAME)"
 	@$(MAKE) -s std_clean
 	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
 
@@ -109,44 +128,44 @@ fclean:
 	@$(MAKE) -s cleanator
 
 re:
-	@$(MAKE) -s proname_header
-	@$(MAKE) -s cleanator
+	@$(MAKE) -s proname_header 2> /dev/null
+	@$(MAKE) -s cleanator 2> /dev/null
 	@$(MAKE) -s std_all
 
 run: re
 	./$(PRONAME)
 
 arch:
-	-sudo docker rm -f webserv
-	sudo docker-compose -f container/Arch/docker-compose.yml build
-	sudo docker-compose -f container/Arch/docker-compose.yml up
+	-$(SUDO) docker rm -f webserv
+	$(SUDO) docker-compose -f container/Arch/docker-compose.yml build
+	$(SUDO) docker-compose -f container/Arch/docker-compose.yml up
 
 ubuntu:
-	-sudo docker rm -f webserv
-	sudo docker-compose -f container/Ubuntu/docker-compose.yml build
-	sudo docker-compose -f container/Ubuntu/docker-compose.yml up
+	-$(SUDO) docker rm -f webserv
+	$(SUDO) docker-compose -f container/Ubuntu/docker-compose.yml build
+	$(SUDO) docker-compose -f container/Ubuntu/docker-compose.yml up
 
 debian:
-	-sudo docker rm -f webserv
-	sudo docker-compose -f container/Debian/docker-compose.yml build
-	sudo docker-compose -f container/Debian/docker-compose.yml up
+	-$(SUDO) docker rm -f webserv
+	$(SUDO) docker-compose -f container/Debian/docker-compose.yml build
+	$(SUDO) docker-compose -f container/Debian/docker-compose.yml up
 
 alpine:
-	-sudo docker rm -f webserv
-	sudo docker-compose -f ./container/Alpine/docker-compose.yml build
-	sudo docker-compose -f ./container/Alpine/docker-compose.yml up
+	-$(SUDO) docker rm -f webserv
+	$(SUDO) docker-compose -f ./container/Alpine/docker-compose.yml build
+	$(SUDO) docker-compose -f ./container/Alpine/docker-compose.yml up
 
 logs:
-	sudo docker logs webserv
+	$(SUDO) docker logs webserv
 
 restart_docker:
-	sudo docker restart webserv
+	$(SUDO) docker restart webserv
 
 std_clean:
 	@rm -rf $(OBJ_DIR)
 
 cleanator:
-	@printf "%-28s$(RESET)" "$(FRed)FCleaning $(PRONAME)"
+	@printf "%-40s$(RESET)" "$(FRed)FCleaning $(PRONAME)"
 	@rm -rf $(OBJ_DIR)
 	@rm -f $(PRONAME)
 	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"

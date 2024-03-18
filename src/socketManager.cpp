@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 16:33:00 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/11 20:25:05 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/16 16:37:19 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,10 +48,10 @@ void	socketManager::addServerSocket(struct socketParameter &params) {
 		bindSocket(fd, params.interfaceAddress);
 		listenSocket(fd);
 		data.info.port = extractPort(params.interfaceAddress);
-		// delete params.interfaceAddress;
+		delete params.interfaceAddress;
 	}
 	catch (std::exception &e) {
-		// delete params.interfaceAddress;
+		delete params.interfaceAddress;
 		throw e;
 	}
 	data.parentSocket = _sockets.end();

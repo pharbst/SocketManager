@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 16:33:00 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/16 16:37:19 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/19 17:31:11 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ void	socketManager::start(InterfaceFunction interfaceFunction) {
 	std::cout << "socketManager starting" << std::endl;
 	if (!_ssl)
 		initSSL();
+	printSocketMap();
 	SEPOLL(interfaceFunction);
 }
 

@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 15:38:59 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/15 18:54:39 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/20 12:49:48 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,12 @@ class socketManager {
 		static void		printSocketMap();
 		// function to tell the socketmanager that a read or write call has been performed on a socket
 		static void		detectActivity(int fd);
-		// static void		stop();
-		// static void		initSSL();
-		// static void		destroySSL();
+		// function to stop the socket manager
+		static void		stop();
+		// function to init the ssl library
+		static void		initSSL();
+		// function to destroy the ssl library
+		static void		destroySSL();
 
 	private:
 	/************************************************/
@@ -55,7 +58,7 @@ class socketManager {
 	/************************************************/
 	/*              private functions               */
 	/************************************************/
-		static void							initSSL();
+		// static void							initSSL();
 
 		// for add servers socket
 		static void							setSocketNonBlocking(int fd);

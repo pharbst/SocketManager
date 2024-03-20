@@ -6,7 +6,7 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 15:39:29 by pharbst           #+#    #+#              #
-#    Updated: 2024/03/16 14:15:22 by pharbst          ###   ########.fr        #
+#    Updated: 2024/03/20 19:21:44 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -38,13 +38,10 @@ CC			 = c++
 
 # add other header files here
 HEADER		 =	socketManagerBase.hpp \
-				socketManager.hpp \
-				Interface.hpp
+				socketManager.hpp
 
 # add source files without header with the same name and the file with the main function has to be the first in the list
-SRCS		 =	Interface.cpp \
-				InterfaceTools.cpp \
-				socketManager.cpp \
+SRCS		 =	socketManager.cpp \
 				socketManagerTools.cpp \
 				socketManagerSSL.cpp \
 				socketManagerSEPOLL.cpp \
@@ -64,6 +61,12 @@ VPATH		:= src
 all:
 	@$(MAKE) -s proname_header 2> /dev/null
 	@$(MAKE) -s std_all 2> /dev/null
+
+std_all:
+	@$(MAKE) -s install_openssl
+	@-include $(OBJS:.o=.d) 2> /dev/null
+	@$(MAKE) -s $(PRONAME)
+	@printf "$(SETCURUP)$(CLEARLINE)\r$(FPurple)%-33s$(FGreen)$(TICKBOX)$(RESET)\n" "Compiling $(PRONAME)"
 
 install_openssl:
 ifeq ($(UNAME), Darwin)
@@ -88,23 +91,16 @@ endif
 
 
 install_openssl_mac:
+	@printf "%-40s$(RESET)" "$(FCyan)installing brew"
 ifeq ($(shell test -d $(HOME)/.brew || echo $$?), 1)
 ifeq ($(shell test -d $(HOME)/goinfre/.brew || echo $$?), 1)
-	@printf "%-40s$(RESET)" "$(FCyan)installing brew"
 	@rm -rf $(HOME)/.brew && rm -rf $(HOME)/goinfre/.brew && git clone --depth=1 https://github.com/Homebrew/brew $(HOME)/goinfre/.brew && echo 'export PATH=$(HOME)/goinfre/.brew/bin:$$PATH' >> $(HOME)/.zshrc && source $(HOME)/.zshrc && brew update > /dev/null 2>&1
-	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
 endif
+	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
 endif
 	@printf "%-40s$(RESET)" "$(FBlue)Installing openssl"
 	@brew install openssl >/dev/null 2>&1
 	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
-
-std_all:
-	@$(MAKE) -s install_openssl
-# @printf "%s$(RESET)\n" "$(FPurple)Compiling $(PRONAME)"
-	@-include $(OBJS:.o=.d) 2> /dev/null
-	@$(MAKE) -s $(PRONAME)
-	@printf "$(SETCURUP)$(CLEARLINE)\r$(FPurple)%-33s$(FGreen)$(TICKBOX)$(RESET)\n" "Compiling $(PRONAME)"
 
 $(PRONAME): $(OBJS)
 	@ar rcs $(PRONAME) $(OBJS)

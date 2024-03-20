@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 13:05:01 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/11 19:43:37 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/20 12:51:21 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,11 @@ void	socketManager::initSSL() {
 	_ssl = true;
 }
 
-// void	socketManager::destroySSL() {
-// 	ERR_free_strings();
-// 	EVP_cleanup();
-// 	_ssl = false;
-// }
+void	socketManager::destroySSL() {
+	_ssl = false;
+	ERR_free_strings();
+	EVP_cleanup();
+}
 
 SSL_CTX*	socketManager::createSSLContext(struct socketParameter &params) {
 	SSL_CTX* ctx = SSL_CTX_new(SSLv23_server_method());

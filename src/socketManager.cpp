@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 16:33:00 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/19 17:42:29 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/20 12:53:14 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,11 +27,14 @@ void	socketManager::start(InterfaceFunction interfaceFunction) {
 	SEPOLL(interfaceFunction);
 }
 
-// void	socketManager::stop() {
-// 	if (_ssl)
-// 		destroySSL();
-// 	// stop the socketManager
-// }
+void	socketManager::stop() {
+	if (_ssl)
+		destroySSL();
+	while (_sockets.size() > 0) {
+		std::cout << "remove socket: " << _sockets.begin()->first << std::endl;
+		removeSocket(_sockets.begin()->first);
+	}
+}
 
 void	socketManager::addServerSocket(struct socketParameter &params) {
 	if (!_ssl)

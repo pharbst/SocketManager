@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 12:01:41 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/18 14:06:47 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/20 14:24:50 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,14 @@ void	Interface::interface(int sock, struct sockData data) {
 		socketManager::detectActivity(sock);
 		std::string		request;
 		std::string		response;
-		if (readFromSocket(sock, data, request)) {
+		int status = readFromSocket(sock, data, request);
+		if (status == -1) {
 			std::cout << "readFromSocket failed" << std::endl;
 			socketManager::removeSocket(sock);
 			return ;
 		}
+		else if (status == 0)
+			return ;
 		if (passRequest(request, response, data.info.port)) {
 			std::cout << "passRequest failed" << std::endl;
 			socketManager::removeSocket(sock);

@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 12:02:48 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/20 14:25:54 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/20 17:04:14 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,8 @@ bool	Interface::passRequest(std::string &request, std::string &response, uint32_
 
 bool	Interface::writeToSocket(int sock, struct sockData data, std::string &response) {
 	int i;
+	if (response.empty())
+		return (false);
 	if (data.info.ssl)
 		i = SSL_write((SSL*)data.info.sslData.Context, response.c_str(), response.length());
 	else

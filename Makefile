@@ -6,7 +6,7 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 15:39:29 by pharbst           #+#    #+#              #
-#    Updated: 2024/03/19 13:48:42 by pharbst          ###   ########.fr        #
+#    Updated: 2024/03/20 19:21:44 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -38,13 +38,10 @@ CC			 = c++
 
 # add other header files here
 HEADER		 =	socketManagerBase.hpp \
-				socketManager.hpp \
-				Interface.hpp
+				socketManager.hpp
 
 # add source files without header with the same name and the file with the main function has to be the first in the list
-SRCS		 =	Interface.cpp \
-				InterfaceTools.cpp \
-				socketManager.cpp \
+SRCS		 =	socketManager.cpp \
 				socketManagerTools.cpp \
 				socketManagerSSL.cpp \
 				socketManagerSEPOLL.cpp \

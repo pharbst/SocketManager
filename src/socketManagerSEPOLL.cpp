@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:22:31 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/11 20:22:51 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/21 12:18:56 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,7 @@ void	socketManager::socketKqueue(InterfaceFunction interfaceFunction) {
 	initKqueue();
 	int errorCounter = 0;
 	while (true) {
-		int numEvents = kevent(_kq, _changes, 2, _events, 2, NULL);
+		int numEvents = kevent(_kq, NULL, 0, _events, 10, NULL);
 		if (numEvents == -1) {
 			std::cout << "socketManager::socketKqueue:	Error in kevent" << std::endl;
 			errorCounter++;

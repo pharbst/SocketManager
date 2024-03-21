@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 16:33:00 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/20 12:53:14 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/21 14:02:25 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ void	socketManager::start(InterfaceFunction interfaceFunction) {
 	ss << _keepAlive << "ms";
 	std::cout << "KeepAlive is set to " << (_keepAlive > 0 ? ss.str() : "false") << std::endl;
 	printSocketMap();
+	if (_sockets.size() == 0)
+		throw std::runtime_error("socketManager::start:	no sockets to manage");
 	SEPOLL(interfaceFunction);
 }
 
@@ -96,7 +98,7 @@ void	socketManager::printSocketMap() {
 	std::cout << "╔══════════════════════Socket Map══════════════════════╗" << std::endl;
 	std::cout << "║   fd   ║  port  ║ server ║   SSL  ║  esta  ║ timeout ║" << std::endl;
 	for (std::map<int, struct sockData>::iterator it = _sockets.begin(); it != _sockets.end(); it++) {
-		printf("║%8d║%8d║%8d║%8d║%8d║%9ld║\n", it->first, it->second.info.port, _SERVER, it->second.info.ssl, it->second.info.sslData.established ? 1 : 0, (it->second.parentSocket == _sockets.end()) ? 0 : (_keepAlive > 0) ? currentTime - it->second.info.lastActivity : 0);
+		printf("║%8d║%8d║%8d║%8d║%8d║%9ld║\n", it->first, it->second.info.port, _SERVER, it->second.info.ssl, it->second.info.sslData.established ? 1 : 0, (it->second.parentSocket == _sockets.end()) ? 0 : (_keepAlive > 0) ? (currentTime - it->second.info.lastActivity) / 1000 : 0);
 	}
 	std::cout << "╚══════════════════════════════════════════════════════╝" << std::endl;
 }

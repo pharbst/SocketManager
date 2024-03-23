@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 16:33:00 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/21 14:02:25 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/23 20:54:50 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void	socketManager::addServerSocket(struct socketParameter &params) {
 	}
 	catch (std::exception &e) {
 		delete params.interfaceAddress;
-		throw e;
+		throw std::runtime_error(e.what());
 	}
 	data.parentSocket = _sockets.end();
 	data.info.lastActivity = 0;

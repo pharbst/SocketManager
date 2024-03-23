@@ -6,7 +6,7 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 15:39:29 by pharbst           #+#    #+#              #
-#    Updated: 2024/03/20 19:21:44 by pharbst          ###   ########.fr        #
+#    Updated: 2024/03/23 21:05:08 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -64,68 +64,68 @@ all:
 
 std_all:
 	@$(MAKE) -s install_openssl
+	@$(PRINT) "$(FPurple)%-33s\n$(RESET)" "Compiling $(PRONAME)"
 	@-include $(OBJS:.o=.d) 2> /dev/null
 	@$(MAKE) -s $(PRONAME)
-	@printf "$(SETCURUP)$(CLEARLINE)\r$(FPurple)%-33s$(FGreen)$(TICKBOX)$(RESET)\n" "Compiling $(PRONAME)"
+	@$(PRINT) "\n$(SETCURUP)$(SETCURUP)$(CLEARLINE)$(FPurple)%-33s$(FGreen)$(TICKBOX)\n$(RESET)$(CLEARLINE)" "Compiling $(PRONAME)"
 
 install_openssl:
 ifeq ($(UNAME), Darwin)
 	@$(MAKE) -s install_openssl_mac
 else
-	@printf "%-40s$(RESET)" "$(FBlue)Installing openssl"
-ifeq ($(filter $(OS_LIKE),Debian)$(filter $(OS),Debian),Debian)
+	@$(PRINT) "%-40s$(RESET)" "$(FBlue)Installing openssl"
+ifeq ($(call GET_OS,Debian), Debian)
 ifeq ($(shell dpkg -l | grep -c openssl), 0)
-	@$(SUDO) apt-get -y install openssl > /dev/null 2>&1
+	@$(SUDO) apt-get -y install openssl >/dev/null 2>&1
 endif
 else ifeq ($(filter $(OS_LIKE),Alpine)$(filter $(OS),Alpine),Alpine)
 ifeq ($(shell apk list | grep -c openssl), 0)
-	@$(SUDO) apk add openssl > /dev/null 2>&1
+	@$(SUDO) apk add openssl >/dev/null 2>&1
 endif
 else ifeq ($(filter $(OS_LIKE),Arch)$(filter $(OS),Arch),Arch)
 ifeq ($(shell pacman -Q | grep -c openssl), 0)
-	@$(SUDO) pacman -S --noconfirm openssl > /dev/null 2>&1
+	@$(SUDO) pacman -S --noconfirm openssl >/dev/null 2>&1
 endif
 endif
-	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
+	@$(PRINT) "$(FGreen)$(TICKBOX)$(RESET)\n"
 endif
-
 
 install_openssl_mac:
-	@printf "%-40s$(RESET)" "$(FCyan)installing brew"
+	@$(PRINT) "%-40s$(RESET)" "$(FCyan)installing brew"
 ifeq ($(shell test -d $(HOME)/.brew || echo $$?), 1)
 ifeq ($(shell test -d $(HOME)/goinfre/.brew || echo $$?), 1)
 	@rm -rf $(HOME)/.brew && rm -rf $(HOME)/goinfre/.brew && git clone --depth=1 https://github.com/Homebrew/brew $(HOME)/goinfre/.brew && echo 'export PATH=$(HOME)/goinfre/.brew/bin:$$PATH' >> $(HOME)/.zshrc && source $(HOME)/.zshrc && brew update > /dev/null 2>&1
 endif
-	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
+	@$(PRINT) "$(FGreen)$(TICKBOX)$(RESET)\n"
 endif
-	@printf "%-40s$(RESET)" "$(FBlue)Installing openssl"
+	@$(PRINT) "%-40s$(RESET)" "$(FBlue)Installing openssl"
 	@brew install openssl >/dev/null 2>&1
-	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
+	@$(PRINT) "$(FGreen)$(TICKBOX)$(RESET)\n"
 
 $(PRONAME): $(OBJS)
 	@ar rcs $(PRONAME) $(OBJS)
 
 $(OBJ_DIR)%.o: %.cpp
 ifeq ($(shell test -d $(OBJ_DIR) || echo $$?), 1)
-	printf "$(CLEARLINE)\r$(Yellow)creting obj dir$(RESET)"
+	$(PRINT) "$(CLEARLINE)\r$(Yellow)creting obj dir$(RESET)"
 	@mkdir -p $(OBJ_DIR)
 endif
-	@printf "$(CLEARLINE)\r%-40s$(RESET)" "$(Yellow)Compiling $< ..."
+	@$(PRINT) "$(CLEARLINE)\r%-40s$(RESET)" "$(Yellow)Compiling $< ..."
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	@$(MAKE) -s proname_header
-	@printf "%-40s$(RESET)" "$(FRed)Cleaning $(PRONAME)"
+	@$(PRINT) "%-40s$(RESET)" "$(FRed)Cleaning $(PRONAME)"
 	@$(MAKE) -s std_clean
-	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
+	@$(PRINT) "$(FGreen)$(TICKBOX)$(RESET)\n"
 
 fclean:
 	@$(MAKE) -s proname_header
 	@$(MAKE) -s cleanator
 
 re:
-	@$(MAKE) -s proname_header 2> /dev/null
-	@$(MAKE) -s cleanator 2> /dev/null
+	@$(MAKE) -s proname_header
+	@$(MAKE) -s cleanator
 	@$(MAKE) -s std_all
 
 run: re
@@ -161,13 +161,13 @@ std_clean:
 	@rm -rf $(OBJ_DIR)
 
 cleanator:
-	@printf "%-40s$(RESET)" "$(FRed)FCleaning $(PRONAME)"
+	@$(PRINT) "%-40s$(RESET)" "$(FRed)FCleaning $(PRONAME)"
 	@rm -rf $(OBJ_DIR)
 	@rm -f $(PRONAME)
-	@printf "$(FGreen)$(TICKBOX)$(RESET)\n"
+	@$(PRINT) "$(FGreen)$(TICKBOX)$(RESET)\n"
 
 proname_header:
-	@printf "$(FYellow)╔══════════════════════╗\n\
+	@$(PRINT) "$(FYellow)╔══════════════════════╗\n\
 $(FYellow)║$(FRed)          (    (      $(FYellow)║$(RESET)\n\
 $(FYellow)║$(FRed)     (    )\\ ) )\\ )   $(FYellow)║$(RESET)\n\
 $(FYellow)║$(FRed)     )\\  (()/((()/(   $(FYellow)║$(RESET)\n\

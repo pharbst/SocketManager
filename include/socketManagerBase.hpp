@@ -6,13 +6,14 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 13:37:27 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/24 05:24:30 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/24 09:11:52 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SOCKETMANAGERBASE_HPP
 # define SOCKETMANAGERBASE_HPP
 
+# include "color.hpp"
 # include <iostream>
 # include <sys/socket.h>
 # include <netinet/in.h>

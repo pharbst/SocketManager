@@ -6,11 +6,13 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:22:31 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/21 12:18:56 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/24 06:23:02 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "socketManager.hpp"
+#include <iostream>
+#include <cstring>
 
 #if defined(__LINUX__) || defined(__linux__)
 int					socketManager::_epollfd;
@@ -276,25 +278,45 @@ void	socketManager::socketAccept(int fd) {
 		SSLAccept(fd);
 	else {
 		int newClient = accept(fd, NULL, NULL);
+		std::cout << "new client: " << newClient << std::endl;
 		if (newClient == -1)
 			throw std::runtime_error("socketManager::socketAccept:	accept failed");
 		struct sockData	data;
+		std::cout << std::endl << std::endl;
+		std::cout << "initialize new client data struct:" << std::endl;
+		std::cout << "ParentSocket refers to: " << ((SOCKET.parentSocket == _sockets.end()) ? "_sockets.end()" : std::to_string(SOCKET.parentSocket->first)) << std::endl;
+		std::cout << "ssl: " << (SOCKET.info.ssl ? "true" : "false") << std::endl;
+		std::cout << "port: " << SOCKET.info.port << std::endl;
+		std::cout << "read: " << (SOCKET.info.read ? "true" : "false") << std::endl;
+		std::cout << "write: " << (SOCKET.info.write ? "true" : "false") << std::endl;
+		std::cout << "lastActivity: " << SOCKET.info.lastActivity << std::endl;
+		if (SSLSOCKET) {
+			std::cout << "sslData.Context: " << SOCKET.info.sslData.Context << std::endl;
+			std::cout << "sslData.established: " << (SOCKET.info.sslData.established ? "true" : "false") << std::endl;
+			std::cout << "sslData.read: " << (SOCKET.info.sslData.read ? "true" : "false") << std::endl;
+			std::cout << "sslData.write: " << (SOCKET.info.sslData.write ? "true" : "false") << std::endl;
+		}
 		data = SOCKET;
 		data.parentSocket = _sockets.find(fd);
+		std::cout << "data.parentSocket: " << ((data.parentSocket == _sockets.end()) ? "_sockets.end()" : std::to_string(data.parentSocket->first)) << std::endl;
 		if (_keepAlive > 0)
 			data.info.lastActivity = getCurrentTime();
 		else
 			data.info.lastActivity = 0;
 		if (SSLSOCKET) {
+			std::cout << "	init SSL data:" << std::endl;
 			data.info.sslData.Context = NULL;
 			data.info.sslData.Context = (void*)SSL_new((SSL_CTX*)SOCKET.info.sslData.Context);
 			if (!data.info.sslData.Context) {
 				close(newClient);
 				throw std::runtime_error("socketManager::socketAccept:	SSL_new failed");
 			}
+			std::cout << "	SSL instance: " << (SSL*)data.info.sslData.Context << std::endl;
 			SSL_set_fd((SSL*)data.info.sslData.Context, newClient);
 		}
 		ADDSOCKET(newClient, data);
+		std::cout << "new client added to socketManager" << std::endl;
+		std::cout << std::endl << std::endl;
 		if (SSLSOCKET)
 			SSLAccept(newClient);
 	}

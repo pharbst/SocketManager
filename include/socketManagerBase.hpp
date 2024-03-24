@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 13:37:27 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/11 21:01:28 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/24 05:24:30 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ typedef void	(*InterfaceFunction)(int sock, struct sockData sockData);
 # define SSLESTAB		SOCKET.info.sslData.established
 # define READ			info.read
 # define WRITE			info.write
+# define _SERVER (it->second.parentSocket == _sockets.end()) ? "true" : "false"
 
 # define SSLACCEPTEVENT		((SOCKET.info.sslData.read && SOCKET.READ) || (SOCKET.info.sslData.write && SOCKET.WRITE))
 

@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 13:05:01 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/24 06:30:46 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/24 10:54:37 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,22 +80,22 @@ SSL_CTX*	socketManager::createSSLContext(struct socketParameter &params) {
 }
 
 void		socketManager::SSLAccept(int fd) {
-	std::cout << "SSLAccept" << std::endl;
+	// std::cout << "socketManager::SSLAccept: for fd: " << fd << std::endl;
 	int	acceptReturn = SSL_accept((SSL*)SOCKET.info.sslData.Context);
 	int	error = SSL_get_error((SSL*)SOCKET.info.sslData.Context, acceptReturn);
 	switch (acceptReturn) {
 		case -1:
 			switch (error) {
-				case SSL_ERROR_SSL:
+				case SSL_ERROR_SSL: // 1
 					SOCKET.info.sslData.established = false;
 					SOCKET.info.sslData.read = true;
 					SOCKET.info.sslData.write = false;
 					throw std::runtime_error("socketManager::SSLAccept:	Certificate is not trusted or is self-signed");
-				case SSL_ERROR_WANT_READ:
+				case SSL_ERROR_WANT_READ:	// 2
 					SOCKET.info.sslData.read = true;
 					SOCKET.info.sslData.write = false;
 					return ;
-				case SSL_ERROR_WANT_WRITE:
+				case SSL_ERROR_WANT_WRITE:	// 3
 					SOCKET.info.sslData.write = true;
 					SOCKET.info.sslData.read = false;
 					return ;
@@ -106,9 +106,10 @@ void		socketManager::SSLAccept(int fd) {
 					return ;
 			}
 		case 0:
+			std::cout << "here" << std::endl;
 			return ;
 		case 1:
-			std::cout << "SSL accept success" << std::endl;
+			// std::cout << "SSL accept success" << std::endl;
 			SOCKET.info.sslData.established = true;
 			SOCKET.info.sslData.read = false;
 			SOCKET.info.sslData.write = false;

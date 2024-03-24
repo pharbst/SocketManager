@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:22:31 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/24 06:23:02 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/24 09:16:42 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@ void		socketManager::socketEpoll(InterfaceFunction interfaceFunction) {
 			if (SERVERSOCKET || SSLACCEPTEVENT) {
 				try {
 					socketAccept(fd);
-					printSocketMap();
 				}
 				catch (std::exception &e) {
 					PRINT_ERROR;
@@ -71,7 +70,7 @@ void		socketManager::initEpoll() {
 			if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, fd, &interest) != -1)
 				break ;
 			if (i == 9) {
-				std::cout << "socketManager::initEpoll:	unable to add " << fd << " to the epoll instance deleting socket and continue" << std::endl;
+				std::cout << "socketManager::initEpoll:	unable to add " << fd << " to the epoll instance removing socket and continue" << std::endl;
 				if (SSLSOCKET && SERVERSOCKET)
 					SSL_CTX_free((SSL_CTX*)SOCKET.info.sslData.Context);
 				else if (SSLSOCKET) {
@@ -95,7 +94,7 @@ void		socketManager::epollAdd(int newClient, struct sockData data) {
 			SSL_free((SSL*)data.info.sslData.Context);
 		}
 		close(newClient);
-		throw std::runtime_error("socketManager::epollAdd:	Error adding file descriptor to epoll");
+		throw std::runtime_error("socketManager::epollAdd:	Error adding the new client to epoll the epoll instance");
 	}
 	_sockets.insert(std::pair<int, struct sockData>(newClient, data));
 }
@@ -133,10 +132,9 @@ void	socketManager::socketKqueue(InterfaceFunction interfaceFunction) {
 				data.WRITE = true;
 			else
 				data.WRITE = false;
-			if (SERVERSOCKET || SSLACCEPTEVENT) {
+			if (SERVERSOCKET || (SOCKET.info.ssl && !SOCKET.info.sslData.established)) {
 				try {
 					socketAccept(fd);
-					printSocketMap();
 				}
 				catch (std::exception &e) {
 					PRINT_ERROR;
@@ -162,7 +160,7 @@ void	socketManager::initKqueue() {
 			if (kevent(_kq, _changes, 2, NULL, 0, NULL) != -1)
 				break ;
 			if (i == 9) {
-				std::cout << "socketManager::initKqueue:	unable to add " << fd << " to the kqueue instance deleting socket and continue" << std::endl;
+				std::cout << "socketManager::initKqueue:	unable to add " << fd << " to the kqueue instance removing socket and continue" << std::endl;
 				if (SSLSOCKET && SERVERSOCKET)
 					SSL_CTX_free((SSL_CTX*)SOCKET.info.sslData.Context);
 				else if (SSLSOCKET) {
@@ -278,45 +276,45 @@ void	socketManager::socketAccept(int fd) {
 		SSLAccept(fd);
 	else {
 		int newClient = accept(fd, NULL, NULL);
-		std::cout << "new client: " << newClient << std::endl;
+		// std::cout << "socketManager::socketAccept:	new client: " << newClient << std::endl;
 		if (newClient == -1)
 			throw std::runtime_error("socketManager::socketAccept:	accept failed");
 		struct sockData	data;
-		std::cout << std::endl << std::endl;
-		std::cout << "initialize new client data struct:" << std::endl;
-		std::cout << "ParentSocket refers to: " << ((SOCKET.parentSocket == _sockets.end()) ? "_sockets.end()" : std::to_string(SOCKET.parentSocket->first)) << std::endl;
-		std::cout << "ssl: " << (SOCKET.info.ssl ? "true" : "false") << std::endl;
-		std::cout << "port: " << SOCKET.info.port << std::endl;
-		std::cout << "read: " << (SOCKET.info.read ? "true" : "false") << std::endl;
-		std::cout << "write: " << (SOCKET.info.write ? "true" : "false") << std::endl;
-		std::cout << "lastActivity: " << SOCKET.info.lastActivity << std::endl;
-		if (SSLSOCKET) {
-			std::cout << "sslData.Context: " << SOCKET.info.sslData.Context << std::endl;
-			std::cout << "sslData.established: " << (SOCKET.info.sslData.established ? "true" : "false") << std::endl;
-			std::cout << "sslData.read: " << (SOCKET.info.sslData.read ? "true" : "false") << std::endl;
-			std::cout << "sslData.write: " << (SOCKET.info.sslData.write ? "true" : "false") << std::endl;
-		}
+		// std::cout << std::endl << std::endl;
+		// std::cout << "initialize new client data struct:" << std::endl;
+		// std::cout << "ParentSocket refers to: " << ((SOCKET.parentSocket == _sockets.end()) ? "_sockets.end()" : std::to_string(SOCKET.parentSocket->first)) << std::endl;
+		// std::cout << "ssl: " << (SOCKET.info.ssl ? "true" : "false") << std::endl;
+		// std::cout << "port: " << SOCKET.info.port << std::endl;
+		// std::cout << "read: " << (SOCKET.info.read ? "true" : "false") << std::endl;
+		// std::cout << "write: " << (SOCKET.info.write ? "true" : "false") << std::endl;
+		// std::cout << "lastActivity: " << SOCKET.info.lastActivity << std::endl;
+		// if (SSLSOCKET) {
+		// 	std::cout << "sslData.Context: " << SOCKET.info.sslData.Context << std::endl;
+		// 	std::cout << "sslData.established: " << (SOCKET.info.sslData.established ? "true" : "false") << std::endl;
+		// 	std::cout << "sslData.read: " << (SOCKET.info.sslData.read ? "true" : "false") << std::endl;
+		// 	std::cout << "sslData.write: " << (SOCKET.info.sslData.write ? "true" : "false") << std::endl;
+		// }
 		data = SOCKET;
 		data.parentSocket = _sockets.find(fd);
-		std::cout << "data.parentSocket: " << ((data.parentSocket == _sockets.end()) ? "_sockets.end()" : std::to_string(data.parentSocket->first)) << std::endl;
+		// std::cout << "data.parentSocket: " << ((data.parentSocket == _sockets.end()) ? "_sockets.end()" : std::to_string(data.parentSocket->first)) << std::endl;
 		if (_keepAlive > 0)
 			data.info.lastActivity = getCurrentTime();
 		else
 			data.info.lastActivity = 0;
 		if (SSLSOCKET) {
-			std::cout << "	init SSL data:" << std::endl;
+			// std::cout << "	init SSL data:" << std::endl;
 			data.info.sslData.Context = NULL;
 			data.info.sslData.Context = (void*)SSL_new((SSL_CTX*)SOCKET.info.sslData.Context);
 			if (!data.info.sslData.Context) {
 				close(newClient);
 				throw std::runtime_error("socketManager::socketAccept:	SSL_new failed");
 			}
-			std::cout << "	SSL instance: " << (SSL*)data.info.sslData.Context << std::endl;
+			// std::cout << "	SSL instance: " << (SSL*)data.info.sslData.Context << std::endl;
 			SSL_set_fd((SSL*)data.info.sslData.Context, newClient);
 		}
 		ADDSOCKET(newClient, data);
-		std::cout << "new client added to socketManager" << std::endl;
-		std::cout << std::endl << std::endl;
+		// std::cout << "new client added to socketManager" << std::endl;
+		// std::cout << std::endl << std::endl;
 		if (SSLSOCKET)
 			SSLAccept(newClient);
 	}

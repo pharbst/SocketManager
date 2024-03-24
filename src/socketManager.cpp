@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 16:33:00 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/24 06:41:14 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/24 08:51:21 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 std::map<int, struct sockData>		socketManager::_sockets;
 bool								socketManager::_ssl = false;
-unsigned long						socketManager::_keepAlive = 600000;
+unsigned long						socketManager::_keepAlive = 120000;
 
 void	socketManager::start(InterfaceFunction interfaceFunction) {
 	std::cout << "socketManager starting" << std::endl;
@@ -80,7 +80,7 @@ void	socketManager::addServerSocket(struct socketParameter &params) {
 void	socketManager::removeSocket(int fd) {
 	if (_sockets.find(fd) == _sockets.end())
 		return ;
-	if (SSLSOCKET) {
+	if (SSLSOCKET && !SERVERSOCKET) {
 		SSL_shutdown((SSL*)SOCKET.info.sslData.Context);
 		SSL_free((SSL*)SOCKET.info.sslData.Context);
 	}

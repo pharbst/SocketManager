@@ -6,7 +6,7 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 15:39:29 by pharbst           #+#    #+#              #
-#    Updated: 2024/03/23 21:05:08 by pharbst          ###   ########.fr        #
+#    Updated: 2024/03/24 13:00:52 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -60,7 +60,7 @@ OBJS		 = $(addprefix $(OBJ_DIR), $(SRCS:.cpp=.o))
 VPATH		:= src
 all:
 	@$(MAKE) -s proname_header 2> /dev/null
-	@$(MAKE) -s std_all 2> /dev/null
+	@$(MAKE) -j6 -s std_all
 
 std_all:
 	@$(MAKE) -s install_openssl
@@ -126,7 +126,7 @@ fclean:
 re:
 	@$(MAKE) -s proname_header
 	@$(MAKE) -s cleanator
-	@$(MAKE) -s std_all
+	@$(MAKE) -j6 -s std_all
 
 run: re
 	./$(PRONAME)

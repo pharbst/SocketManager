@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 21:54:30 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/11 14:14:39 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/24 02:27:12 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,22 @@ void	socketManager::setSocketNonBlocking(int fd) {
 }
 
 void	socketManager::bindSocket(int fd, struct sockaddr* address) {
-	if (bind(fd, address, sizeof(*address)) == -1)
-		throw std::runtime_error("socketManager::bindSocket:	binding failed");
+	if (address->sa_family == AF_INET) {
+		if (bind(fd, address, sizeof(struct sockaddr_in)) == -1) {
+			std::stringstream ss;
+			ss << extractPort(address);
+			throw std::runtime_error("socketManager::bindSocket:	port: " + ss.str() + std::strerror(errno));
+		}
+	}
+	else if (address->sa_family == AF_INET6) {
+		if (bind(fd, address, sizeof(struct sockaddr_in6)) == -1) {
+			std::stringstream ss;
+			ss << extractPort(address);
+			throw std::runtime_error("socketManager::bindSocket:	port: " + ss.str() + std::strerror(errno));
+		}
+	}
+	else
+		throw std::runtime_error("socketManager::bindSocket: Unsupported address family");
 }
 
 void	socketManager::listenSocket(int fd) {

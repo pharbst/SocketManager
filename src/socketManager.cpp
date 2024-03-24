@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 16:33:00 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/24 02:21:20 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/24 06:41:14 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 std::map<int, struct sockData>		socketManager::_sockets;
 bool								socketManager::_ssl = false;
-unsigned long						socketManager::_keepAlive = 0;
+unsigned long						socketManager::_keepAlive = 600000;
 
 void	socketManager::start(InterfaceFunction interfaceFunction) {
 	std::cout << "socketManager starting" << std::endl;
@@ -91,14 +91,12 @@ void	socketManager::removeSocket(int fd) {
 	close(fd);
 }
 
-# define _SERVER (it->second.parentSocket == _sockets.end())
-
 void	socketManager::printSocketMap() {
 	unsigned long currentTime = getCurrentTime();
 	std::cout << "╔══════════════════════Socket Map══════════════════════╗" << std::endl;
 	std::cout << "║   fd   ║  port  ║ server ║   SSL  ║  esta  ║ timeout ║" << std::endl;
 	for (std::map<int, struct sockData>::iterator it = _sockets.begin(); it != _sockets.end(); it++) {
-		printf("║%8d║%8d║%8d║%8d║%8d║%9ld║\n", it->first, it->second.info.port, _SERVER, it->second.info.ssl, it->second.info.sslData.established ? 1 : 0, (it->second.parentSocket == _sockets.end()) ? 0 : (_keepAlive > 0) ? (currentTime - it->second.info.lastActivity) / 1000 : 0);
+		printf("║%8d║%8d║%8s║%8d║%8d║%9ld║\n", it->first, it->second.info.port, _SERVER, it->second.info.ssl, it->second.info.sslData.established ? 1 : 0, (it->second.parentSocket == _sockets.end()) ? 0 : (_keepAlive > 0) ? (currentTime - it->second.info.lastActivity) / 1000 : 0);
 	}
 	std::cout << "╚══════════════════════════════════════════════════════╝" << std::endl;
 }

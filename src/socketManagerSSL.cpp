@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 13:05:01 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/20 12:51:21 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/24 06:30:46 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,13 +80,16 @@ SSL_CTX*	socketManager::createSSLContext(struct socketParameter &params) {
 }
 
 void		socketManager::SSLAccept(int fd) {
+	std::cout << "SSLAccept" << std::endl;
 	int	acceptReturn = SSL_accept((SSL*)SOCKET.info.sslData.Context);
 	int	error = SSL_get_error((SSL*)SOCKET.info.sslData.Context, acceptReturn);
 	switch (acceptReturn) {
 		case -1:
 			switch (error) {
 				case SSL_ERROR_SSL:
-					removeSocket(fd);
+					SOCKET.info.sslData.established = false;
+					SOCKET.info.sslData.read = true;
+					SOCKET.info.sslData.write = false;
 					throw std::runtime_error("socketManager::SSLAccept:	Certificate is not trusted or is self-signed");
 				case SSL_ERROR_WANT_READ:
 					SOCKET.info.sslData.read = true;

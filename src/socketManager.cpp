@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 16:33:00 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/25 12:19:13 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/25 15:08:23 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 std::map<int, struct sockData>		socketManager::_sockets;
 bool								socketManager::_ssl = false;
+long								socketManager::_lastPrint = 0;
 unsigned long						socketManager::_keepAlive = 120000;
 
 void	socketManager::start(InterfaceFunction interfaceFunction) {
@@ -26,6 +27,7 @@ void	socketManager::start(InterfaceFunction interfaceFunction) {
 	printSocketMap();
 	if (_sockets.size() == 0)
 		throw std::runtime_error("socketManager::start:	no sockets to manage");
+	_lastPrint = getCurrentTime();
 	SEPOLL(interfaceFunction);
 }
 

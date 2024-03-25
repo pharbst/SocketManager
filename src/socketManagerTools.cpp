@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 21:54:30 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/24 03:03:27 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/25 15:05:20 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,9 +82,8 @@ void				socketManager::checkTimeouts() {
 		}
 		lastCheck = getCurrentTime();
 	}
-	static unsigned long lastPrint = 0;
-	if (getCurrentTime() - lastPrint > 10000) {
+	if (getCurrentTime() - _lastPrint > 10000) {
 		printSocketMap();
-		lastPrint = getCurrentTime();
+		_lastPrint = getCurrentTime();
 	}
 }

@@ -6,7 +6,7 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 15:39:29 by pharbst           #+#    #+#              #
-#    Updated: 2024/03/25 14:42:56 by pharbst          ###   ########.fr        #
+#    Updated: 2024/03/25 16:24:07 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,7 +21,7 @@ SUDO		:=
 CFLAGS		:= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 $(INC_DIR)
 else ifeq ($(UNAME), Linux)
 SUDO		:= sudo
-CFLAGS		:= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 $(INC_DIR)
+CFLAGS		:= -Wall -Wextra -Werror -MMD -MP -g -Ofast -std=c++98 $(INC_DIR)
 endif
 
 CC			 = c++

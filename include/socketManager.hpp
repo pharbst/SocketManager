@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 15:38:59 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/25 12:12:19 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/25 15:05:44 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ class socketManager {
 		static bool								_ssl;
 		static std::map<int, struct sockData>	_sockets;
 		static unsigned long					_keepAlive;
+		static long								_lastPrint;
 	/************************************************/
 	/*         private depending attributes         */
 	/************************************************/

@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 16:33:00 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/24 08:51:21 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/25 10:04:00 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,8 +72,13 @@ void	socketManager::addServerSocket(struct socketParameter &params) {
 		data.info.ssl = true;
 		data.info.sslData.Context = createSSLContext(params);
 	}
-	else
+	else {
 		data.info.ssl = false;
+		data.info.sslData.Context = NULL;
+		data.info.sslData.established = false;
+		data.info.sslData.read = false;
+		data.info.sslData.write = false;
+	}
 	_sockets.insert(std::pair<int, struct sockData>(fd, data));
 }
 

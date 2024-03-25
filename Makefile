@@ -6,7 +6,7 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 15:39:29 by pharbst           #+#    #+#              #
-#    Updated: 2024/03/24 13:00:52 by pharbst          ###   ########.fr        #
+#    Updated: 2024/03/25 11:20:00 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,14 +18,10 @@ INC_DIR		:= 	-I./include/
 
 ifeq ($(UNAME), Darwin)
 SUDO		:= 
-SSLCFLAGS	:= -I$(shell brew --prefix)/opt/openssl@3/include/
-SSLLDFLAGS	:= -L$(shell brew --prefix)/opt/openssl@3/lib/ -lssl -lcrypto
-CFLAGS		:= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 $(SSLCFLAGS) $(INC_DIR)
-LDFLAGS		:= $(SSLLDFLAGS)
+CFLAGS		:= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 $(INC_DIR)
 else ifeq ($(UNAME), Linux)
 SUDO		:= sudo
 CFLAGS		:= -Wall -Wextra -Werror -MMD -MP -g -std=c++98 $(INC_DIR)
-LDFLAGS		:= -lssl -lcrypto
 endif
 
 CC			 = c++
@@ -58,6 +54,7 @@ OBJS		 = $(addprefix $(OBJ_DIR), $(SRCS:.cpp=.o))
 
 # in case of subdirectories in the src folder add them here
 VPATH		:= src
+
 all:
 	@$(MAKE) -s proname_header 2> /dev/null
 	@$(MAKE) -j6 -s std_all
@@ -91,15 +88,17 @@ endif
 endif
 
 install_openssl_mac:
-	@$(PRINT) "%-40s$(RESET)" "$(FCyan)installing brew"
+	@$(PRINT) "%-40s$(RESET)" "$(FCyan)Installing brew"
 ifeq ($(shell test -d $(HOME)/.brew || echo $$?), 1)
 ifeq ($(shell test -d $(HOME)/goinfre/.brew || echo $$?), 1)
-	@rm -rf $(HOME)/.brew && rm -rf $(HOME)/goinfre/.brew && git clone --depth=1 https://github.com/Homebrew/brew $(HOME)/goinfre/.brew && echo 'export PATH=$(HOME)/goinfre/.brew/bin:$$PATH' >> $(HOME)/.zshrc && source $(HOME)/.zshrc && brew update > /dev/null 2>&1
+	@rm -rf $(HOME)/.brew  > /dev/null 2>&1 && rm -rf $(HOME)/goinfre/.brew  > /dev/null 2>&1 && git clone --depth=1 https://github.com/Homebrew/brew $(HOME)/goinfre/.brew  > /dev/null 2>&1 && echo 'export PATH=$(HOME)/goinfre/.brew/bin:$$PATH' >> $(HOME)/.zshrc  > /dev/null 2>&1 && source $(HOME)/.zshrc  > /dev/null 2>&1 && brew update > /dev/null 2>&1
 endif
 	@$(PRINT) "$(FGreen)$(TICKBOX)$(RESET)\n"
 endif
 	@$(PRINT) "%-40s$(RESET)" "$(FBlue)Installing openssl"
+ifeq ($(shell brew list 2>/dev/null | grep -c openssl), 0)
 	@brew install openssl >/dev/null 2>&1
+endif
 	@$(PRINT) "$(FGreen)$(TICKBOX)$(RESET)\n"
 
 $(PRONAME): $(OBJS)
@@ -111,7 +110,11 @@ ifeq ($(shell test -d $(OBJ_DIR) || echo $$?), 1)
 	@mkdir -p $(OBJ_DIR)
 endif
 	@$(PRINT) "$(CLEARLINE)\r%-40s$(RESET)" "$(Yellow)Compiling $< ..."
+ifeq ($(UNAME), Darwin)
+	@$(CC) $(CFLAGS) -I$(shell brew --prefix)/opt/openssl@3/include/ -c $< -o $@
+else
 	@$(CC) $(CFLAGS) -c $< -o $@
+endif
 
 clean:
 	@$(MAKE) -s proname_header

@@ -6,7 +6,7 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/03 18:16:49 by pharbst           #+#    #+#              #
-#    Updated: 2024/03/23 19:54:59 by pharbst          ###   ########.fr        #
+#    Updated: 2024/03/25 11:13:47 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -70,7 +70,7 @@ SETCURUP		=	$(shell echo "\033[1A")
 SETCURDOWN		=	$(shell echo "\033[1B")
 CLEARLINE		=	$(shell echo "\033[2K")
 else
-	ifeq ($(filter Debian, $(OS), $(OS_LIKE)), Debian)
+ifeq ($(call GET_OS,Debian), Debian)
 PRINT = echo
 Black			=	$(shell echo "\033[0;30m")
 FBlack			=	$(shell echo "\033[1;30m")
@@ -98,7 +98,7 @@ SETCURSTART		=	$(shell echo "\r")
 SETCURUP		=	$(shell echo "\033[1A")
 SETCURDOWN		=	$(shell echo "\033[1B")
 CLEARLINE		=	$(shell echo "\033[2K")
-	else
+else
 PRINT = printf
 Black			=	$(shell echo -e "\033[0;30m")
 FBlack			=	$(shell echo -e "\033[1;30m")
@@ -126,5 +126,5 @@ SETCURSTART		=	$(shell echo -e "\r")
 SETCURUP		=	$(shell echo -e "\033[1A")
 SETCURDOWN		=	$(shell echo -e "\033[1B")
 CLEARLINE		=	$(shell echo -e "\033[2K")
-	endif
+endif
 endif

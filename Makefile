@@ -6,7 +6,7 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 15:39:29 by pharbst           #+#    #+#              #
-#    Updated: 2024/03/25 11:20:00 by pharbst          ###   ########.fr        #
+#    Updated: 2024/03/25 14:42:56 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -56,10 +56,23 @@ OBJS		 = $(addprefix $(OBJ_DIR), $(SRCS:.cpp=.o))
 VPATH		:= src
 
 all:
-	@$(MAKE) -s proname_header 2> /dev/null
+	@$(MAKE) -s proname_header
 	@$(MAKE) -j6 -s std_all
 
 std_all:
+ifeq ($(shell test -f libsocketManager.a && echo $$?), 0)
+ifeq ($(shell nm -C libsocketManager.a 2>/dev/null | grep epoll >/dev/null 2>&1 && echo $$? ), 0)
+ifeq ($(UNAME), Darwin)
+	@$(PRINT) "$(Yellow)lib compiled for linux$(RESET)\n"
+	@rm libsocketManager.a
+endif
+else
+ifeq ($(UNAME), Linux)
+	@$(PRINT) "$(Yellow)lib compiled for macos$(RESET)\n"
+	@rm libsocketManager.a
+endif
+endif
+endif
 	@$(MAKE) -s install_openssl
 	@$(PRINT) "$(FPurple)%-33s\n$(RESET)" "Compiling $(PRONAME)"
 	@-include $(OBJS:.o=.d) 2> /dev/null

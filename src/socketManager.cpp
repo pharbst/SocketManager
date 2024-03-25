@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 16:33:00 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/25 10:04:00 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/25 12:19:13 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ bool								socketManager::_ssl = false;
 unsigned long						socketManager::_keepAlive = 120000;
 
 void	socketManager::start(InterfaceFunction interfaceFunction) {
-	std::cout << "socketManager starting" << std::endl;
+	std::cout << FGreen << "socketManager::start:	Webserver is starting..." << NORMAL << std::endl;
 	if (!_ssl)
 		initSSL();
 	std::stringstream ss;
@@ -32,10 +32,13 @@ void	socketManager::start(InterfaceFunction interfaceFunction) {
 void	socketManager::stop() {
 	if (_ssl)
 		destroySSL();
+	std::cout << FYellow << "socketManager::stop:	closing connections..." << NORMAL << std::endl;
+	int i = 0;
 	while (_sockets.size() > 0) {
-		std::cout << "remove socket: " << _sockets.begin()->first << std::endl;
 		removeSocket(_sockets.begin()->first);
+		i++;
 	}
+	std::cout << FGreen << "socketManager::stop:	" << i << " connections closed" << NORMAL << std::endl;
 }
 
 void	socketManager::addServerSocket(struct socketParameter &params) {

@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 15:38:59 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/20 12:49:48 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/25 12:12:19 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,21 +17,13 @@
 
 class socketManager {
 	public:
-		// function to start the socket manager
 		static void		start(InterfaceFunction interfaceFunction);
-		// function to add a server socket
 		static void		addServerSocket(struct socketParameter &param);
-		// function to remove a socket by its fd from the socket manager
 		static void		removeSocket(int fd);
-		// funciton to print the whole socket map
 		static void		printSocketMap();
-		// function to tell the socketmanager that a read or write call has been performed on a socket
 		static void		detectActivity(int fd);
-		// function to stop the socket manager
 		static void		stop();
-		// function to init the ssl library
 		static void		initSSL();
-		// function to destroy the ssl library
 		static void		destroySSL();
 
 	private:
@@ -58,20 +50,16 @@ class socketManager {
 	/************************************************/
 	/*              private functions               */
 	/************************************************/
-		// static void							initSSL();
 
-		// for add servers socket
 		static void							setSocketNonBlocking(int fd);
 		static void							bindSocket(int fd, struct sockaddr* interfaceAddress);
 		static void							listenSocket(int fd);
 		static uint32_t						extractPort(struct sockaddr* interfaceAddress);
 		static SSL_CTX*						createSSLContext(struct socketParameter &params);
 
-		// accept functions
 		static void							socketAccept(int fd);
 		static void							SSLAccept(int fd);
 
-		// routines
 		static void							checkTimeouts();
 		static unsigned long				getCurrentTime();
 

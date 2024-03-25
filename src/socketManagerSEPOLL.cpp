@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:22:31 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/24 09:16:42 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/25 13:42:24 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ void		socketManager::socketEpoll(InterfaceFunction interfaceFunction) {
 	struct epoll_event ready[MAX_EVENTS];
 	initEpoll();
 	int errorCounter = 0;
+	std::cout << FGreen << "socketManager::socketEpoll:	Ready for connections..." << NORMAL << std::endl;
 	while (true) {
 		int numEvents = epoll_wait(_epollfd, ready, MAX_EVENTS, 1000);
 		if (numEvents == -1) {
@@ -113,6 +114,7 @@ struct kevent		socketManager::_events[2];
 void	socketManager::socketKqueue(InterfaceFunction interfaceFunction) {
 	initKqueue();
 	int errorCounter = 0;
+	std::cout << FGreen << "socketManager::socketKqueue:	Ready for connections..." << NORMAL << std::endl;
 	while (true) {
 		int numEvents = kevent(_kq, NULL, 0, _events, 10, NULL);
 		if (numEvents == -1) {
@@ -203,6 +205,7 @@ int			socketManager::_maxfd;
 void	socketManager::socketSelect(InterfaceFunction interfaceFunction) {
 	initSelect();
 	int errorCounter = 0;
+	std::cout << FGreen << "socketManager::socketSelect:	Ready for connections..." << NORMAL << std::endl;
 	while (true) {
 		fd_set readfds = _interest;
 		fd_set writefds = _interest;

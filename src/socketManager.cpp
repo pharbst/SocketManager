@@ -6,7 +6,7 @@
 /*   By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 16:33:00 by pharbst           #+#    #+#             */
-/*   Updated: 2024/03/25 15:08:23 by pharbst          ###   ########.fr       */
+/*   Updated: 2024/03/26 11:35:20 by pharbst          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@ std::map<int, struct sockData>		socketManager::_sockets;
 bool								socketManager::_ssl = false;
 long								socketManager::_lastPrint = 0;
 unsigned long						socketManager::_keepAlive = 120000;
+
+static void							deleteSockAddr(struct sockaddr *addr);
 
 void	socketManager::start(InterfaceFunction interfaceFunction) {
 	std::cout << FGreen << "socketManager::start:	Webserver is starting..." << NORMAL << std::endl;
@@ -62,10 +64,10 @@ void	socketManager::addServerSocket(struct socketParameter &params) {
 		bindSocket(fd, params.interfaceAddress);
 		listenSocket(fd);
 		data.info.port = extractPort(params.interfaceAddress);
-		delete params.interfaceAddress;
+		deleteSockAddr(params.interfaceAddress);
 	}
 	catch (std::exception &e) {
-		delete params.interfaceAddress;
+		deleteSockAddr(params.interfaceAddress);
 		throw std::runtime_error(e.what());
 	}
 	data.parentSocket = _sockets.end();
@@ -111,4 +113,9 @@ void	socketManager::printSocketMap() {
 	std::cout << "╚══════════════════════════════════════════════════════╝" << std::endl;
 }
 
-
+static void							deleteSockAddr(struct sockaddr *addr) {
+	if (addr->sa_family == AF_INET)
+		delete (struct sockaddr_in*)addr;
+	else if (addr->sa_family == AF_INET6)
+		delete (struct sockaddr_in6*)addr;
+}

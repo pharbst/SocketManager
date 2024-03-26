@@ -6,7 +6,7 @@
 #    By: pharbst <pharbst@student.42heilbronn.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 15:39:29 by pharbst           #+#    #+#              #
-#    Updated: 2024/03/25 16:24:07 by pharbst          ###   ########.fr        #
+#    Updated: 2024/03/26 11:23:59 by pharbst          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -63,12 +63,12 @@ std_all:
 ifeq ($(shell test -f libsocketManager.a && echo $$?), 0)
 ifeq ($(shell nm -C libsocketManager.a 2>/dev/null | grep epoll >/dev/null 2>&1 && echo $$? ), 0)
 ifeq ($(UNAME), Darwin)
-	@$(PRINT) "$(Yellow)lib compiled for linux$(RESET)\n"
+	@$(PRINT) "$(Yellow)Recompiling $(PRONAME) for macos$(RESET)\n"
 	@rm libsocketManager.a
 endif
 else
 ifeq ($(UNAME), Linux)
-	@$(PRINT) "$(Yellow)lib compiled for macos$(RESET)\n"
+	@$(PRINT) "$(Yellow)Recompiling $(PRONAME) for linux$(RESET)\n"
 	@rm libsocketManager.a
 endif
 endif
